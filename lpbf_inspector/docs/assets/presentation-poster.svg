@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Powder Ranger — Demo video</title>
+  <desc id="desc">Video placeholder for Powder Ranger presentation demo</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1a3b"/>
+      <stop offset="50%" stop-color="#060a14"/>
+      <stop offset="100%" stop-color="#0a1630"/>
+    </linearGradient>
+    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2f7dff"/>
+      <stop offset="100%" stop-color="#5ce4ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g fill="#93a9ff" font-family="Segoe UI, Arial" text-anchor="middle">
+    <text x="640" y="280" font-size="58" font-weight="700">Powder Ranger</text>
+    <text x="640" y="360" font-size="32" fill="#9eb2dd">Click play to watch the demo</text>
+  </g>
+  <circle cx="640" cy="385" r="72" fill="rgba(255,255,255,0.15)"/>
+  <polygon points="610,350 610,420 680,385" fill="url(#btn)"/>
+  <g fill="#6f88d1" font-family="Segoe UI, Arial" text-anchor="middle">
+    <text x="640" y="640" font-size="30">Add your file at docs/assets/presentation.mp4</text>
+  </g>
+</svg>
