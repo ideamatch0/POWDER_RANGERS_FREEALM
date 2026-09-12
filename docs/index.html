@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Powder Ranger — Powders + Layer Monitoring</title>
+  <meta
+    name="description"
+    content="Powder Ranger is an offline LPBF build-monitoring tool for fast visual triage of melt-pool and powder-bed image sequences."
+  />
+  <link rel="icon" type="image/svg+xml" href="assets/powder-ranger-icon.svg" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <p class="eyebrow">Powder Ranger</p>
+      <h1>Every layer under watch.</h1>
+      <p class="subtitle">
+        A focused LPBF quality review app for layer-by-layer image analysis, hotspot triage,
+        and clear reporting without machine learning models.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/ideamatch0/POWDER_RANGERS_FREEALM/releases/latest" target="_blank" rel="noopener">
+          Download Windows .exe
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/ideamatch0/POWDER_RANGERS_FREEALM" target="_blank" rel="noopener">
+          View on GitHub
+        </a>
+      </div>
+      <p class="muted">
+        New versions are published from the repo and are compatible with Windows x64.
+      </p>
+    </div>
+    <div class="glow" aria-hidden="true"></div>
+  </header>
+
+  <main>
+    <section class="container section">
+      <h2>What this version does</h2>
+      <p>
+        Powder Ranger helps process teams inspect large image volumes from LPBF powder-bed monitoring
+        and focus review time on the most relevant layers instead of scrolling through thousands of files.
+      </p>
+      <div class="grid cards">
+        <article>
+          <h3>Single-job analysis</h3>
+          <p>
+            Load one build job, calibrate once on intra-job grayscale level, and run layer-by-layer
+            analysis in one pass.
+          </p>
+        </article>
+        <article>
+          <h3>Spread + Melt views</h3>
+          <p>
+            Separate analysis and visualization for recoater/spread and post-melt images, with stable layer mapping and
+            per-stage metrics.
+          </p>
+        </article>
+        <article>
+          <h3>Priority scoring</h3>
+          <p>
+            Each detection gets a score from 0 to 100 by combining intensity rise and persistence across
+            consecutive layers.
+          </p>
+        </article>
+        <article>
+          <h3>Faster review flow</h3>
+          <p>
+            Sort by timeline or score, move quickly through detections, and log decisions directly
+            during review.
+          </p>
+        </article>
+        <article>
+          <h3>3D stack explorer</h3>
+          <p>
+            Reconstruct a layered volume preview, tune slice depth and density, and inspect retained indications
+            in 3D context.
+          </p>
+        </article>
+        <article>
+          <h3>Offline-first</h3>
+          <p>
+            No image upload to the cloud by default. Source photos remain local; analysis can be performed on any
+            standard office workstation.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="container section alt">
+      <h2>Built for practical usage</h2>
+      <div class="feature-list">
+        <p>
+          The tool was designed around day-to-day operator and engineering review:
+        </p>
+        <ul>
+          <li>Layer-level highlighting with image context (before, flagged layer, after).</li>
+          <li>Consecutive-layer persistence filters to suppress one-off noise.</li>
+          <li>Automatic ROI focus when needed to keep decisions fast.</li>
+          <li>Dedicated report export of retained indications only.</li>
+          <li>Mode selection at launch: independent job analysis and comparison workflow stub.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="container section">
+      <h2>How to get started</h2>
+      <div class="steps">
+        <article>
+          <span>01</span>
+          <h3>Download the latest release</h3>
+          <p>Get the Windows package from GitHub Releases and run the installer.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Import your job library</h3>
+          <p>Point to one build job folder and choose spread / melt image phase pattern.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Run calibration + analysis</h3>
+          <p>Run grayscale calibration, set thresholds, and generate detection results.</p>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>Review and export</h3>
+          <p>Classify detections, build your report, and share your results with your team.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="container section alt">
+      <h2>Security and deployment notes</h2>
+      <div class="grid split">
+        <p>
+          Local mode is suitable for confidential shop-floor environments.
+          Public hosting is possible for demos using a controlled deployment profile.
+        </p>
+        <ul>
+          <li>Offline-first processing by default</li>
+          <li>No mandatory cloud storage of build images</li>
+          <li>Suitable for internal LAN deployment</li>
+          <li>Release packaging in Windows executable</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="container section">
+      <h2>Roadmap</h2>
+      <div class="timeline">
+        <div><strong>Now:</strong> Single-job analysis, scoring, review workflow, 3D indicator stack.</div>
+        <div><strong>Next:</strong> Full reference-job comparison and expanded enterprise modules.</div>
+        <div><strong>Later:</strong> Team workspace, admin dashboards, and managed deployment package.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <img src="assets/powder-ranger-logo.svg" alt="Powder Ranger logo" />
+      <p>Powder Ranger is a lightweight tool for LPBF teams that want faster visual control over build-quality signals.</p>
+      <p>© <span id="year"></span> Powder Ranger.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

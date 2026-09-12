@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "name": "Powder Ranger.exe",
+      "bytes": 33415091,
+      "sha256": "74c7ad93d18368c17d510c85fae58c5e05cdf556c40e5a4445c2cfe1aea73868"
+    },
+    {
+      "name": "Powder_Ranger_0.3.1_Windows_x64_EN.zip",
+      "bytes": 33139623,
+      "sha256": "f2aa367b84fbc521a1741df8b1495fe4462d513956d5387a85b7655a68763482"
+    }
+  ],
+  "acceptance": {
+    "version": "0.3.1",
+    "frozen": true,
+    "executable": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\release\\Powder Ranger.exe",
+    "tcl_version": "8.6.12",
+    "ok": true,
+    "measured": 16,
+    "report_bytes": 97059,
+    "assets": {
+      "/": 5576,
+      "/workspace": 49734,
+      "/reports.js": 7058,
+      "/reports.css": 4302,
+      "/powder-ranger-icon.svg": 888,
+      "/api/state": 4039
+    },
+    "seconds": 2.47
+  }
+}

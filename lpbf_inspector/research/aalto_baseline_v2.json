@@ -1,0 +1,146 @@
+{
+  "version": "aalto-spatial-2",
+  "signature": "349d7d4743b586c71df8fb2fc85614ce0f6e9f0a98fcdcb9faeca3edc6323433",
+  "created": "2026-09-09T07:24:43.717393+00:00",
+  "images": 2638,
+  "protocol": "leave-one-job-out",
+  "selection_iou": 0.3,
+  "objective": "F1 sur les rectangles annotés des deux autres jobs",
+  "configs_tested": 54,
+  "limitations": [
+    "Évaluation interne rétrospective ; les seuils seuls sont choisis hors job.",
+    "Photos sans rectangle exploitable exclues des mesures de correspondance, mais toutes analysées.",
+    "Une alerte sans correspondance n'est pas nécessairement un faux défaut : les annotations peuvent être incomplètes.",
+    "Aucune sensibilité ou spécificité de contrôle industriel n'est établie.",
+    "Les compteurs ne sont pas assimilés aux couches ; aucune étape ou hauteur inventée."
+  ],
+  "jobs": {
+    "SI383820211201123521": {
+      "job": "SI383820211201123521",
+      "images": 1000,
+      "annotated_images": 406,
+      "reference_boxes": 572,
+      "unknown_images": 594,
+      "detections": 2172,
+      "flagged_images": 564,
+      "config": {
+        "threshold": 4,
+        "min_area": 40,
+        "line_threshold": null
+      },
+      "calibration_jobs": [
+        "SI383820240226095904",
+        "SI383820240318120348"
+      ],
+      "calibration_metrics": {
+        "matched": 1449,
+        "unmatched": 25139,
+        "missed": 2979,
+        "precision": 0.054498269896193774,
+        "recall": 0.32723577235772355,
+        "f1": 0.09343564611813257
+      },
+      "iou30": {
+        "matched": 112,
+        "unmatched": 1715,
+        "missed": 460,
+        "precision": 0.06130268199233716,
+        "recall": 0.1958041958041958,
+        "f1": 0.09337223843268029
+      },
+      "iou50": {
+        "matched": 63,
+        "unmatched": 1764,
+        "missed": 509,
+        "precision": 0.034482758620689655,
+        "recall": 0.11013986013986014,
+        "f1": 0.05252188411838266
+      }
+    },
+    "SI383820240226095904": {
+      "job": "SI383820240226095904",
+      "images": 271,
+      "annotated_images": 127,
+      "reference_boxes": 467,
+      "unknown_images": 144,
+      "detections": 6549,
+      "flagged_images": 271,
+      "config": {
+        "threshold": 4,
+        "min_area": 40,
+        "line_threshold": null
+      },
+      "calibration_jobs": [
+        "SI383820211201123521",
+        "SI383820240318120348"
+      ],
+      "calibration_metrics": {
+        "matched": 1451,
+        "unmatched": 24344,
+        "missed": 3082,
+        "precision": 0.05625121147509207,
+        "recall": 0.3200970659607324,
+        "f1": 0.09568715378528093
+      },
+      "iou30": {
+        "matched": 110,
+        "unmatched": 2510,
+        "missed": 357,
+        "precision": 0.04198473282442748,
+        "recall": 0.23554603854389722,
+        "f1": 0.07126660187884677
+      },
+      "iou50": {
+        "matched": 79,
+        "unmatched": 2541,
+        "missed": 388,
+        "precision": 0.03015267175572519,
+        "recall": 0.16916488222698073,
+        "f1": 0.05118237771298995
+      }
+    },
+    "SI383820240318120348": {
+      "job": "SI383820240318120348",
+      "images": 1367,
+      "annotated_images": 996,
+      "reference_boxes": 3961,
+      "unknown_images": 371,
+      "detections": 5693,
+      "flagged_images": 763,
+      "config": {
+        "threshold": 17,
+        "min_area": 16,
+        "line_threshold": null
+      },
+      "calibration_jobs": [
+        "SI383820211201123521",
+        "SI383820240226095904"
+      ],
+      "calibration_metrics": {
+        "matched": 266,
+        "unmatched": 224,
+        "missed": 773,
+        "precision": 0.5428571428571428,
+        "recall": 0.25601539942252166,
+        "f1": 0.34793982995421846
+      },
+      "iou30": {
+        "matched": 44,
+        "unmatched": 5525,
+        "missed": 3917,
+        "precision": 0.007900879870712875,
+        "recall": 0.01110830598333754,
+        "f1": 0.009233997901364113
+      },
+      "iou50": {
+        "matched": 17,
+        "unmatched": 5552,
+        "missed": 3944,
+        "precision": 0.0030526126773208835,
+        "recall": 0.004291845493562232,
+        "f1": 0.003567681007345226
+      }
+    }
+  },
+  "seconds": 129.24
+}

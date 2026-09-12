@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <title>Powder Ranger</title>
+  <desc>An angular badge, three stacked powder layers and a red indication. A slim visor subtly evokes a ranger.</desc>
+  <path d="M16 4h48l12 12v32L40 76 4 48V16Z" fill="#111a24" stroke="#304452" stroke-width="1.5"/>
+  <path d="m14 51 26 14 26-14" stroke="#46758e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m14 41 26 14 26-14" stroke="#70b1d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m14 31 26-14 26 14-26 14Z" fill="#203a4c" stroke="#91dcff" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m22 31 18-7 8 3-8 3-12 6Z" fill="#0b1119"/>
+  <path d="M43 22v-4h5m11 10h5v-4M43 36v4h5m16-8v8h-5" stroke="#ff5669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="53" cy="29" r="4" fill="#ff5669"/>
+</svg>

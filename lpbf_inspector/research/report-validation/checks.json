@@ -1,0 +1,21 @@
+{
+  "run": "essai_ae619fa3876382ff",
+  "retained": 4,
+  "templates": [
+    "summary",
+    "detailed",
+    "presentation"
+  ],
+  "scenes": [
+    {
+      "label": "After spreading \u00b7 cam1",
+      "cyan": true,
+      "axis": "layer",
+      "loaded": 64,
+      "sampled": 64,
+      "total": 100,
+      "markers": 4,
+      "warnings": []
+    }
+  ]
+}

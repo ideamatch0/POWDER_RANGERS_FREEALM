@@ -1,0 +1,216 @@
+Powder Ranger : analyser les images du lit de poudre, repérer les changements et examiner chaque indication.	Powder Ranger: inspect powder-bed images, detect changes and review indications.
+Ce mode permettra de choisir une fabrication de référence et un job à examiner, puis de comparer leurs images après alignement des caméras, des couches et des étapes.	This mode will compare a build with its reference job after aligning cameras, layers and process stages.
+Les deux jobs devront présenter les mêmes pièces, au même placement et avec des paramètres comparables.	Both jobs will need the same parts, placement and comparable process parameters.
+La comparaison sera disponible dans une prochaine version. Vous pouvez dès maintenant analyser les changements à l’intérieur d’une fabrication.	Reference comparison is planned for a future version. Single-job change analysis is available now.
+La calibration mesure le niveau de gris moyen des 20 premières acquisitions de ce job (par séquence si vous choisissez un intervalle de 2). Les images d’initialisation ne sont pas considérées comme exemptes de défauts.	Calibration measures the average gray level of the first 20 images in this job, separately for each sequence when the interval is 2. These initial images are not assumed to be defect-free.
+Les zones sont comparées à leur historique récent dans cette fabrication. L’analyse suit leurs changements, leur texture, les dérives locales et la luminosité globale. Le seuil réglable fixe la variation minimale à signaler ; la variabilité de l’historique peut augmenter ce seuil. Les annotations des chercheurs et les autres jobs ne participent pas au calcul.	Each area is compared with its recent history within this build. The analysis tracks intensity, texture, local drift and overall brightness. The adjustable threshold sets the minimum change to flag; variation in the recent history can increase this threshold. Researcher annotations and other jobs are not used.
+Pour Aalto, l’intervalle de 2 sépare les acquisitions paires et impaires, sans les identifier comme fusion ou étalement. Une géométrie qui évolue peut aussi provoquer une indication. Un défaut présent depuis le début et stable peut rester invisible à cette analyse temporelle.	For Aalto, an interval of 2 separates even and odd acquisitions without assigning melting or spreading stages. Normal geometry changes can also trigger indications. A stable anomaly present from the start can remain invisible to temporal analysis.
+1 = tout afficher. Même catégorie, même caméra et même étape, avec recouvrement des zones d’une image à la suivante. Une interruption coupe la série. Ce filtre s’applique à la liste, à la 3D et au rapport, sans relancer le calcul ni effacer vos décisions.	1 = show all. Indications must share a category, camera and stage, with overlapping areas in successive images. A gap breaks the sequence. This filter applies to the list, 3D view and report without rerunning the analysis or deleting decisions.
+Le score combine à poids égal l’intensité du changement et sa persistance : 100 × √(V × P). V = r / (r + 2), où r est le dépassement maximal du seuil de détection ; P = n / (n + 3), où n est le nombre d’images comparables consécutives. Une variation plus forte ou plus durable augmente la priorité.	The score gives equal weight to change intensity and persistence: 100 × √(V × P). V = r / (r + 2), where r is the peak detection-threshold ratio; P = n / (n + 3), where n is the number of consecutive comparable images. A stronger or more persistent change increases priority.
+Ce repère sert à organiser la revue. Il dépend des réglages du job et ne représente ni une probabilité de défaut ni une gravité matière.	This score helps prioritize review. It depends on the job settings and does not represent defect probability or material severity.
+Les cadres signalent un changement d’aspect à examiner. Cliquez sur une photo pour ouvrir son agrandissement.	Boxes indicate an appearance change to review. Click a photograph to open a larger view.
+Cinq images par étape initialisent l’historique. Les suivantes sont évaluées.	Five images per stage initialize the history. Subsequent images are evaluated.
+Les photos sont placées à leur hauteur de couche. X et Y restent en pixels ; les proportions 3D ne représentent pas les dimensions réelles de la pièce.	Photos are placed at their layer heights. X and Y remain in pixels; the displayed 3D proportions are not actual part dimensions.
+Deux nouveaux jobs sont disponibles dans le sélecteur, avec 200 photos chacun : 100 couches consécutives, après étalement et après fusion.	Two additional jobs contain 200 photographs each: 100 consecutive layers, after spreading and after melting.
+: couches 2–101 à 20 µm. Photos LayerCamera originales converties sans perte en PNG, sans annotations.	: layers 2–101 at 20 µm. Original LayerCamera photographs converted losslessly to PNG, without annotations.
+: couches 70–169 à 100 µm. Canaux visibles extraits sans annotations depuis le	: layers 70–169 at 100 µm. Visible-light channels extracted without annotations from the
+miroir public du jeu HDF5	public HDF5 dataset mirror
+. Les producteurs ont déjà corrigé l’éclairage et la perspective de ces images.	. The data producers have already corrected lighting and perspective.
+Chaque bibliothèque représente un seul job. Ces extraits occupent environ 1,26 Go ; les archives complètes ne sont pas installées. « Importer un dossier » permet d’ajouter votre propre job de photos JPEG ou PNG. L’import HDF5 générique reste à développer.	Each library represents one job. These extracts occupy approximately 1.26 GB; complete archives are not installed. Use Import folder to add your own JPEG or PNG build images. Generic HDF5 import is not yet available.
+Le logiciel référence votre dossier. Les images restent à leur emplacement.	The application references your folder. Images stay in their original location.
+Un dossier doit correspondre à un seul job. Les doublons caméra / étape / couche sont refusés. Pour plusieurs caméras, le nom doit permettre de les distinguer.	One folder must correspond to one job. Duplicate camera / stage / layer combinations are rejected. Filenames must distinguish cameras when more than one is used.
+Le volume entier est exporté, indépendamment de la coupe affichée à l’écran. Les couleurs suivent les scores. Lorsque la fusion n’est pas identifiée ou analysée, l’empilement photographique est utilisé et signalé.	The complete volume is exported regardless of the current on-screen cut. Indication colors follow their scores. If post-melting images are not identified or analyzed, a photographic stack is used and clearly labeled.
+Le fichier HTML contient ses images et s’ouvre hors ligne. « Imprimer / PDF » utilise l’impression du navigateur. Les champs personnalisés ne changent ni la bibliothèque ni les décisions.	The HTML file includes its images and opens offline. Print / PDF uses the browser print dialog. Custom report fields do not change the library or review decisions.
+L’inspection, couche après couche.	Inspection, layer by layer.
+Repérez les changements, suivez leur persistance et explorez vos couches en 3D.	Spot changes, track persistence and explore your layers in 3D.
+Un mode en préparation pour comparer deux fabrications et mettre leurs écarts en évidence.	A planned mode for comparing two builds and revealing their differences.
+Vos images. Votre regard. Vos décisions.	Your images. Your insight. Your decisions.
+Powder Ranger — Every layer under watch. Choisissez votre mode d’inspection des images de fabrication additive.	Powder Ranger — Every layer under watch. Choose how to inspect your additive manufacturing images.
+Un job et son job de référence	A job and its reference build
+Comparaison entre un job et son job de référence	Compare a job with its reference build
+Comparaison à un job de référence	Reference-job comparison
+Ouvrir l’analyse d’un job seul →	Open single-job analysis →
+Analyse d’un job seul	Single-job analysis
+Choisissez votre mode d’inspection	Choose your inspection mode
+Choisir un mode	Choose a mode
+Entrer dans l’analyse	Start inspecting
+Découvrir le mode comparaison	Explore comparison mode
+Mode 02 · En préparation	Mode 02 · In development
+Changer de mode ↗	Change mode ↗
+INSPECTION APRÈS FABRICATION	POST-BUILD INSPECTION
+Analyse LPBF · calcul local	LPBF inspection · local processing
+Analyse locale	Local analysis
+Analyse indisponible.	Analysis unavailable.
+Analyse de ce job	Job analysis
+Bilan de l’analyse du job	Job analysis overview
+Comment fonctionne cette analyse ?	How does this analysis work?
+Télécharger le bilan	Download analysis summary
+Accueil Powder Ranger	Powder Ranger home
+← Accueil	← Home
+Bibliothèque d’images	Image library
+Bibliothèque active	Active library
+Importer un dossier…	Import folder…
+Réglages de l’analyse	Analysis settings
+Données disponibles	Available data
+Chargement de la série…	Loading image series…
+Étape à analyser	Process stage
+Les deux, séparément	Both, analyzed separately
+Après étalement uniquement	After spreading only
+Après fusion uniquement	After melting only
+Comparer les acquisitions	Compare acquisitions
+Consécutives · N avec N−1	Consecutive · N against N−1
+Alternées · N avec N−2	Alternating · N against N−2
+Zone analysée	Analysis region
+Autour des quatre pièces	Around the four parts
+Seuil de changement	Change threshold
+plus bas = plus sensible	lower = more sensitive
+Taille des zones	Tile size
+Calibrer le niveau de gris	Calibrate gray level
+Analyser ce job	Analyze this job
+Interrompre	Stop
+Chargement du projet…	Loading project…
+Filtrer par durée des indications	Filter by indication persistence
+Persistance minimale	Minimum persistence
+en couches consécutives	in consecutive layers
+en acquisitions comparables consécutives	in consecutive comparable acquisitions
+Appliquer	Apply
+Mode d’exploration	Exploration mode
+Examiner les indications	Review indications
+Empilement 3D des couches	3D layer stack
+Filtrer par étape	Filter by stage
+Toutes les étapes / séquences	All stages / sequences
+Toutes les étapes	All stages
+Filtrer par décision	Filter by decision
+Toutes les décisions	All decisions
+À examiner et retenues	Pending and retained
+Retenues uniquement	Retained only
+Retenues	Retained
+Écartées	Dismissed
+À examiner	Pending review
+Ordre de revue	Review order
+Ordre des couches / acquisitions	Layer / acquisition order
+Score de priorité décroissant	Highest priority first
+Le bouton Retenir / Écarter avance dans cet ordre.	Keep / Dismiss advances in this order.
+← Précédentes	← Previous
+Suivantes →	Next →
+Sélectionnez une indication	Select an indication
+La zone signalée apparaîtra en gros plan, avant et après.	The flagged area will appear in matching close-ups before and after.
+Afficher les cadres	Show boxes
+Score de priorité / 100	Priority score / 100
+Comment lire ce score ?	How is this score calculated?
+Vue d’ensemble · couche signalée	Overview · flagged layer
+Repérer la zone sur le lit de poudre	Locate the area on the powder bed
+Rouge : zone de l’indication	Red: flagged area
+Bleu pointillé : cadrage des trois vues ci-dessous	Dashed blue: crop used for the three views below
+Comparer la même zone	Compare the same area
+Contexte autour	Surrounding context
+Resserré	Tight
+Voir cette zone à l’autre étape, même couche ↗	View this area at the other stage, same layer ↗
+Votre observation	Your observation
+Décrivez ce que vous observez sur cette zone…	Describe what you observe in this area…
+Retenir l’indication	Keep indication
+Laisser à examiner	Leave pending
+Écarter	Dismiss
+Exporter le rapport des retenues	Create retained-indications report
+Empilement photographique en trois dimensions	Three-dimensional photographic stack
+Explorer les images dans le volume	Explore images in the volume
+Étape affichée	Displayed stage
+Après fusion	After melting
+Après étalement	After spreading
+Caméra / canal	Camera / channel
+Zone prédéfinie du job	Job preset region
+Zone prédéfinie	Preset region
+Plans affichés	Displayed planes
+Toutes les couches	All layers
+Une couche sur deux	Every second layer
+Une couche sur cinq	Every fifth layer
+Opacité des couches inférieures	Lower-layer opacity
+Afficher les indications	Show indications
+Indications visibles en 3D	Indications visible in 3D
+Sur la couche de coupe	At the current cut
+Représentation	Display mode
+Plans photographiques	Photographic planes
+Forme extraite · cyan	Extracted shape · cyan
+Photos + forme extraite	Photos + extracted shape
+Contraste minimal de la forme cyan	Cyan shape minimum contrast
+Contraste minimal	Minimum contrast
+Plus bas = davantage de zones extraites.	Lower = more areas extracted.
+Couleurs selon le score	Color by priority score
+Priorité / 100	Priority / 100
+L’empilement se prépare à partir des images de l’analyse.	The stack is prepared from the analyzed images.
+Empilement des photos. Faire glisser ou utiliser les flèches pour pivoter, molette ou touches plus et moins pour zoomer.	Photographic stack. Drag or use arrow keys to rotate; scroll or use plus and minus keys to zoom.
+Glisser : rotation · molette : zoom · Z amplifié pour la lecture	Drag: rotate · scroll: zoom · Z exaggerated for clarity
+Coupe dans l’empilement	Stack cross-section
+Couche supérieure visible	Upper visible layer
+Ouvrir la photo de cette couche ↗	Open this layer photograph ↗
+Vue oblique	Oblique view
+Vue de dessus	Top view
+Bibliothèques publiques et provenance	Public image libraries and provenance
+64 cylindres en 316H	64 cylinders in 316H
+Ajouter une bibliothèque locale	Add a local image library
+Dossier des images, avec ses sous-dossiers	Image folder, including subfolders
+C:\Fabrications\Job_001	C:\Builds\Job_001
+Parcourir…	Browse…
+Nom de la bibliothèque	Library name
+Par exemple : fabrication de septembre	For example: September build
+Épaisseur de couche (µm)	Layer thickness (µm)
+Première couche de référence	First reference layer
+Z de cette couche (mm)	Z of this layer (mm)
+Échelle des images	Image intensity range
+Modèle de noms de fichiers	Filename pattern
+Modèle personnalisé	Custom pattern
+Adapter la lecture des noms et des sous-dossiers	Customize filename and subfolder matching
+Expression avec les groupes camera, layer et phase	Expression with named groups camera, layer and phase
+Correspondance des étapes (JSON)	Stage mapping (JSON)
+Vérifier et ajouter ce dossier	Validate and add folder
+Composer le rapport	Build your report
+Fermer la préparation du rapport	Close report setup
+01 · Choisir une mise en page	01 · Choose a layout
+02 · Identifier la fabrication	02 · Identify the build
+Nom du job	Job name
+Ex. Lot 2026-09 · Échangeur HX-04	E.g. Build 2026-09 · HX-04 heat exchanger
+Référence du rapport	Report reference
+Rédigé par	Prepared by
+Nom / équipe	Name / team
+Matériau	Material
+Alliage / lot poudre	Alloy / powder batch
+Ordre des indications	Indication order
+Chronologique	Chronological
+Score décroissant	Highest score first
+Conclusion / observations générales	Conclusion / general observations
+Votre interprétation et les contrôles complémentaires à prévoir…	Your interpretation and any further checks to consider…
+03 · Illustrer les indications retenues	03 · Illustrate retained indications
+Inclure les vues 3D : oblique + dessus, forme cyan et indications retenues	Include 3D views: oblique + top, cyan shape and retained indications
+Cadrage du volume	Volume region
+Détail de l’aperçu 3D	3D preview detail
+Rapide · jusqu’à 32 plans	Quick · up to 32 planes
+Standard · jusqu’à 64 plans	Standard · up to 64 planes
+Fin · jusqu’à 128 plans	Fine · up to 128 planes
+Annuler la préparation	Cancel generation
+Générer l’aperçu	Generate preview
+Télécharger le rapport HTML	Download HTML report
+Imprimer / PDF	Print / PDF
+Aperçu du rapport personnalisé	Custom report preview
+Reprendre l’animation	Resume animation
+Mettre l’animation en pause	Pause animation
+Reprendre	Resume
+À venir	Coming soon
+Disponible	Available
+INSPECTER	INSPECT
+COMPARER	COMPARE
+Image entière	Full image
+Étape non identifiée	Unidentified stage
+Séquence paire · étape non identifiée	Even sequence · unidentified stage
+Séquence impaire · étape non identifiée	Odd sequence · unidentified stage
+Changement local	Local change
+Dérive locale	Local drift
+Luminosité globale	Global brightness
+Dérive globale	Global drift
+Écart au gris initial	Initial gray-level deviation
+Retenue · commentaire	Retained · comment
+Retenue	Retained
+Écartée	Dismissed
+Erreur de traitement	Processing error
+Gros plans : même cadrage	Close-ups: matching crop
+Vue d’ensemble	Overview
+Fermer	Close

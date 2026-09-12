@@ -1,0 +1,223 @@
+Plus de 80 % des images évaluées sont signalées. Vérifiez le cadrage, la sensibilité et la séparation des séquences.	More than 80% of evaluated images are flagged. Check the crop, sensitivity and sequence separation.
+Les indications signalent des changements à interpréter visuellement.	Indications flag changes that need visual interpretation.
+ rupture(s) de séquence. Bilan avant filtre de persistance, propre à ce job.	 sequence gap(s). Job-specific counts before the persistence filter.
+Gris calibré. Lancez l’analyse pour parcourir le job.	Gray level calibrated. Run analysis to review the job.
+ photos · un job · analyse temporelle autonome	 photos · one job · independent temporal analysis
+Cadrage du lit / des pièces	Powder-bed / part region
+Gris initial de ce job : 	Initial gray level in this job: 
+ photos de départ. 	 initial photographs. 
+Le niveau de gris sera calibré automatiquement au lancement. 	Gray level will be calibrated automatically when analysis starts. 
+Deux séquences séparées (paires / impaires). 	Two separate sequences (even / odd). 
+Acquisitions consécutives. 	Consecutive acquisitions. 
+Fusion et étalement non identifiés : choisissez l’intervalle 2 uniquement si les prises de vue alternent.	Melting and spreading stages are unidentified: use interval 2 only if captures alternate.
+Chaque caméra et étape est calibrée et analysée séparément dans ce job.	Each camera and stage is calibrated and analyzed separately within this job.
+1 = tout afficher. Même catégorie, même caméra et même 	1 = show all. Same category, camera and 
+séquence (intervalle 	sequence (interval 
+ Les zones doivent se recouvrir d’une image à la suivante ; une interruption coupe la série. Filtre commun à la liste, à la 3D et au rapport, sans relancer le calcul ni effacer vos décisions.	 Areas must overlap in successive images; a gap breaks the sequence. The filter applies to the list, 3D view and report without recalculating measurements or deleting decisions.
+Import du dossier	Folder import
+Indexation des images	Indexing images
+ fichiers parcourus…	 files scanned…
+Calibration du gris dans ce job : 	Job gray-level calibration: 
+Traitement interrompu · les mesures déjà calculées seront réutilisées	Processing stopped · existing measurements will be reused
+Analyse disponible · 	Analysis available · 
+ photos évaluées sur 	 evaluated photos out of 
+Gris calibré · prêt à analyser les 	Gray level calibrated · ready to analyze 
+Prêt à analyser les 	Ready to analyze 
+Résultats disponibles · 	Results available · 
+ images consécutives par série initialisent l’historique.	 consecutive images per series initialize the history.
+Images en erreur	Image errors
+Photos évaluées	Evaluated photos
+Photos de calibration	Calibration photos
+Photos avec indications	Flagged photos
+Indications par image	Indications per image
+Gris initial · / 255	Initial gray level · / 255
+ photos mesurées · 	 measured photos · 
+ photos évaluées · 	 evaluated photos · 
+ images d’initialisation · 	 initialization images · 
+ d’initialisation · 	 initialization · 
+ d’initialisation ·	 initialization ·
+ à examiner · 	 pending · 
+ image(s) en erreur · 	 image error(s) · 
+ en erreur.	 error(s).
+ images mesurées	 measured images
+ masquée(s) par la persistance · minimum 	 hidden by persistence · minimum 
+L’analyse est en cours.	Analysis is running.
+Aucune indication pour ces réglages ou filtres.	No indications match these settings or filters.
+Image absente de cette série	Image missing from this series
+Dimensions différentes : comparaison indisponible	Different dimensions: comparison unavailable
+Ouvrir ce gros plan	Open this close-up
+Ouvrir la couche entière	Open the full layer image
+ pixels sur la photo d’origine.	 pixels in the original photograph.
+Indication de 	Indication size: 
+Même cadrage de 	Matching crop: 
+ pixels et même échelle de gris. Les pointillés des vues avant/après repèrent le même emplacement.	 pixels, with the same gray-level scale. Dashed boxes in the before/after views mark the same location.
+ · hauteur physique non attribuée	 · physical height not assigned
+ · dépassement du seuil × 	 · threshold ratio × 
+acquisition(s) comparable(s)	comparable acquisition(s)
+ · persistance : 	 · persistence: 
+ · composante 	 · component 
+Intensité × 	Intensity × 
+ · enregistrée	 · saved
+Fin de la liste · décision enregistrée	End of list · decision saved
+Analyse en cours	Analysis in progress
+Comparaison · à venir	Comparison · coming soon
+Analyse d’un job	Single-job analysis
+Le sélecteur de dossier est indisponible. Collez le chemin du dossier ci-dessus.	The folder picker is unavailable. Paste the folder path above.
+Source des images · 	Image source · 
+Dossier local : 	Local folder: 
+ image(s) non reconnue(s) par le modèle de noms.	 image(s) not recognized by the filename pattern.
+La vue 3D nécessite WebGL dans ce navigateur. Les vues 2D restent disponibles.	The 3D view requires WebGL in this browser. The 2D views remain available.
+Initialisation 3D : 	3D initialization: 
+Assemblage du rendu 3D impossible.	Could not initialize the 3D renderer.
+Section photographique indisponible.	Photographic section unavailable.
+Extraction de la section de coupe…	Extracting the current cross-section…
+Section extraite en cyan, superposée à la photo	Extracted cyan section overlaid on the photograph
+Aucune section extraite. Essayez un contraste minimal plus bas.	No section extracted. Try a lower minimum contrast.
+Extraction très étendue : vérifiez le fond et augmentez le contraste minimal.	Very extensive extraction: check the background and increase minimum contrast.
+Cyan : section extraite. Vérifiez sa correspondance avec la photo.	Cyan: extracted section. Check that it matches the photograph.
+Forme extraite : sections photographiques en cyan, empilées aux hauteurs des couches. Extraction approximative par contraste local, sans CAO ni annotations : ombres, reflets, cavités et zones peu contrastées peuvent fausser les contours. Contrôlez la superposition sur la photo de coupe.	Extracted shape: cyan photographic sections stacked at their layer heights. Local-contrast extraction is approximate; shadows, reflections, cavities and low-contrast areas can distort the outline. Check the overlay on the cross-section photograph.
+La forme après fusion exige une étape identifiée. Ces acquisitions ne sont pas étiquetées fusion / étalement ; l’empilement des photos et les scores restent disponibles.	Shape reconstruction requires an identified post-melting stage. These acquisitions have no melting / spreading labels; the photographic stack and scores remain available.
+Sélectionnez « After melting » pour extraire la forme visible des pièces.	Select After melting to extract visible part sections.
+Forme cyan : 	Cyan shape: 
+ · extraction terminée.	 · extraction complete.
+calcul en cours…	processing…
+reste estimé 	estimated remaining 
+ · aperçu ≤ 	 · preview ≤ 
+ px, géométrie approximative.	 px, approximate geometry.
+ indication(s) visible(s) · persistance minimale : 	 visible indication(s) · minimum persistence: 
+ · jaune → rouge : score de priorité croissant.	 · yellow → red: increasing priority score.
+ · repères rouges.	 · red markers.
+ Repères au pic, visibles à travers les plans. Cliquez sur un point pour ouvrir sa fiche et son score.	 Markers are placed at the peak and visible through the planes. Click a point to open its review and score.
+ · ordre de prise de vue	 · capture order
+Coupe indisponible.	Cross-section unavailable.
+L’analyse prépare les couches. La vue 3D sera disponible à la fin.	Analysis is preparing the layers. The 3D view will be available when it finishes.
+Lancez d’abord une analyse pour préparer les couches.	Run an analysis first to prepare the layers.
+Préparation des plans photographiques…	Preparing photographic planes…
+Empilement par ordre d’acquisition : 	Stack in acquisition order: 
+. Hauteur physique non attribuée.	. Physical height is not assigned.
+Hauteurs : 	Heights: 
+ mm · pas nominal 	 mm · nominal step 
+L’axe vertical représente l’ordre des photos. Il n’est pas gradué en millimètres. Les indications sont placées sur leur acquisition.	The vertical axis represents acquisition order, not millimeters. Indications are placed on their acquisition.
+Les photos sont placées à leur hauteur de couche. X et Y restent en pixels ; les proportions 3D sont adaptées à la lecture.	Photos are placed at their layer heights. X and Y remain in pixels; 3D proportions are adjusted for readability.
+Glisser : rotation · molette : zoom · axe vertical : acquisitions	Drag: rotate · scroll: zoom · vertical axis: acquisitions
+ plans d’aperçu répartis dans le volume, limités à 	 preview planes distributed through the volume, limited to 
+ pixels. Déplacez la coupe pour charger n’importe quelle image ; les indications restent toutes représentées.	 pixels. Move the cut to load any image; all indications remain represented.
+ aperçus chargés	 previews loaded
+ indisponible(s)	 unavailable
+ · déplacez la coupe pour explorer.	 · move the cut to explore.
+ · vous pouvez déjà pivoter la vue.	 · you can already rotate the view.
+ exclue(s), dimensions différentes.	 excluded: different dimensions.
+après fusion	after melting
+après étalement	after spreading
+étape non identifiée	unidentified stage
+séquence paire	even sequence
+séquence impaire	odd sequence
+Synthèse	Summary
+Revue détaillée	Detailed review
+Présentation	Presentation
+Vues 3D, chiffres clés, tableau et commentaires. Pour une lecture rapide.	3D views, key figures, register and comments. For a quick overview.
+Synthèse et fiche de chaque indication avec les photos avant, au pic et après.	Overview and an individual sheet for each indication, with before, peak and after photographs.
+Summary et fiche de chaque indication avec les photos avant, au pic et après.	Overview and an individual sheet for each indication, with before, peak and after photographs.
+Fond sombre, grandes vues 3D et fiches visuelles. Pour présenter les observations.	Dark theme, large 3D views and visual review sheets. For presenting observations.
+Options de rapport invalides.	Invalid report options.
+Champ de rapport invalide : 	Invalid report field: 
+Renseignez le nom du job.	Enter a job name.
+Modèle de rapport inconnu.	Unknown report template.
+Date du rapport invalide.	Invalid report date.
+Option de vue 3D invalide.	Invalid 3D-view option.
+Cadrage du rapport inconnu.	Unknown report region.
+Choisissez 32, 64 ou 128 plans d’aperçu.	Choose 32, 64 or 128 preview planes.
+La revue a changé. Rouvrez la préparation du rapport pour actualiser son périmètre.	The review has changed. Reopen report setup to refresh its scope.
+Retenez entre 1 et 500 indications satisfaisant la persistance minimale avant d’exporter le rapport.	Keep between 1 and 500 indications meeting the minimum persistence before exporting a report.
+Empilement photographique ; aucune forme after melting attribuée.	Photographic stack; no post-melting shape assigned.
+Empilement photographique ; aucune forme après fusion attribuée.	Photographic stack; no post-melting shape assigned.
+Forme cyan extraite des photos après fusion.	Cyan shape extracted from post-melting photographs.
+Forme cyan extraite des photos after melting.	Cyan shape extracted from post-melting photographs.
+ Les repères correspondent aux observations après étalement, à leur hauteur de couche.	 Markers correspond to post-spreading observations at their layer heights.
+ Les repères correspondent aux observations after spreading, à leur hauteur de couche.	 Markers correspond to post-spreading observations at their layer heights.
+ reste dans le tableau et les fiches, mais ne peut pas être placé dans ce cadrage 3D (dimensions, position ou hauteur hors volume).	 remains in the register and review sheets but cannot be placed in this 3D crop (dimensions, position or height outside the volume).
+Rapport de revue des images de fabrication	Build image review report
+Indications retenues par l’opérateur · analyse d’un job seul	Operator-retained indications · single-job analysis
+indication(s) retenue(s)	retained indication(s)
+priorité maximale / 100	maximum priority / 100
+persistance minimale	minimum persistence
+acquisitions comparables	comparable acquisitions
+ masquée(s) par ce filtre. Les indications à examiner et écartées ne figurent pas dans ce rapport. Instantané du 	 hidden by this filter. Pending and dismissed indications are excluded from this report. Snapshot taken on 
+Conclusion de la revue	Review conclusion
+Vue 3D des indications retenues	3D view of retained indications
+Oblique view du volume avec les indications retenues	Oblique volume view with retained indications
+Top view des indications retenues	Top view of retained indications
+ · volume complet	 · complete volume
+ · toutes hauteurs superposées	 · all heights overlaid
+Cyan : forme photographique	Cyan: photographic shape
+Gris : photographies	Gray: photographs
+ plans chargés sur 	 planes loaded out of 
+ sélectionnés, parmi 	 sampled, from 
+ repère(s) retenu(s), placés au pic de l’indication et visibles à travers les sections.	 retained marker(s), placed at indication peaks and visible through the sections.
+Axe vertical : ordre des acquisitions ; hauteur physique et étape non attribuées.	Vertical axis: acquisition order; physical height and process stage are not assigned.
+Z suit les hauteurs de couche ; son affichage est amplifié. X/Y restent en pixels non calibrés.	Z follows layer heights and is exaggerated for clarity. X/Y remain in uncalibrated pixels.
+ Reconstruction photographique approximative : reflets et ombres peuvent fausser les contours. Vues fixes intégrées au fichier, consultables hors ligne.	 Approximate photographic reconstruction: reflections and shadows may distort outlines. Fixed views are embedded in the file for offline use.
+Limites de la vue exportée	Exported-view limitations
+Registre des indications retenues	Retained-indications register
+score de priorité décroissant	highest priority first
+. Les repères R001, R002… identifient les fiches de ce rapport.	. References R001, R002… identify the report review sheets.
+Le cadre rouge repère la zone signalée.	The red box locates the flagged area.
+Zone au pic : 	Peak region: 
+, même échelle de gris. Le cadre bleu repère le même emplacement avant et après.	, same gray-level scale. The blue box marks the same location before and after.
+Aucun commentaire.	No comment.
+Paramètres et traçabilité	Settings and traceability
+Bibliothèque source	Source library
+Révision des décisions	Decision revision
+Photos mesurées	Measured photos
+Gris initial / 255	Initial gray level / 255
+Non disponible	Unavailable
+Seuil minimal / 255	Minimum threshold / 255
+Contraste 3D	3D contrast
+Les annotations des chercheurs ne sont pas utilisées pour ces indications. Le rapport restitue les observations retenues par l’opérateur ; il n’attribue pas de conformité matière.	Researcher annotations are not used for these indications. The report records observations retained by the operator; it does not determine material conformity.
+provenance de la bibliothèque	library provenance
+Rapport prêt	Report ready
+Un rapport est déjà en préparation. Attendez sa fin ou annulez-le.	A report is already being generated. Wait for completion or cancel it.
+Préparation des vues	Preparing views
+Préparation annulée.	Generation cancelled.
+Export impossible.	Export failed.
+Rapport introuvable. Préparez un nouvel export.	Report not found. Generate a new export.
+Le rapport n’est pas encore prêt.	The report is not ready yet.
+Extraction très étendue sur la couche 	Very extensive extraction on layer 
+Aucune section cyan exploitable : la reconstruction est vide. Vérifiez les photos et le contraste minimal.	No usable cyan section: the reconstruction is empty. Check the photographs and minimum contrast.
+Vue 3D 	3D view 
+Vue 3D · 	3D view · 
+ indisponible : 	 unavailable: 
+ plans · 	 planes · 
+Réglages modifiés · régénérez l’aperçu	Settings changed · generate a new preview
+Lecture des indications retenues…	Reading retained indications…
+ retenue(s) exportable(s) · minimum persistence 	 exportable retained indication(s) · minimum persistence 
+ retenue(s) exportable(s) · persistance minimale 	 exportable retained indication(s) · minimum persistence 
+ retenue(s) masquée(s) par ce filtre.	 retained indication(s) hidden by this filter.
+Retenez au moins une indication satisfaisant la persistance minimale avant de générer un rapport.	Keep at least one indication meeting the minimum persistence before generating a report.
+Cet export est limité à 500 indications retenues. Ajustez la revue ou la persistance.	This export is limited to 500 retained indications. Adjust the review or persistence filter.
+Préparation du rapport…	Generating report…
+État de rapport inattendu.	Unexpected report status.
+Instantané des décisions · 	Decision snapshot · 
+Aperçu · 	Preview · 
+Aperçu	Preview
+Fiche 	Review sheet 
+Gros plan	Close-up
+Couche	Layer
+Couches	Layers
+couche(s)	layer(s)
+couches	layers
+ consécutive(s)	 consecutive
+ consécutives.	 consecutive.
+ retenue(s)	 retained
+ signalées	 flagged
+Intensité	Intensity
+Persistance	Persistence
+Priorité	Priority
+Commentaire	Comment
+Repère / 	Ref. / 
+Ordre : 	Order: 
+chronologique	chronological
+étape.	stage.
+Avant	Before
+Image signalée	Flagged image
+Après	After

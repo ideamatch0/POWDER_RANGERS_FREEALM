@@ -1,0 +1,30 @@
+{
+  "identical": true,
+  "checks": [
+    {
+      "file": "cam1_layer0070_fused.png",
+      "x": 2136,
+      "y": 267,
+      "sha256": "fb82c4cfc1cff6368e94a842a037a8a6e7eabc767ae7c91c8f9b1b59a1929773"
+    },
+    {
+      "file": "cam1_layer0169_fused.png",
+      "x": 2759,
+      "y": 2759,
+      "sha256": "0602c2414255adfabf5bc1c8d90048a4c74faf99681761d168c43a23e66e8f42"
+    },
+    {
+      "file": "cam1_layer0070_spread.png",
+      "x": 0,
+      "y": 0,
+      "sha256": "31a34268d82d54cb996cb15ee857ee5d7c59ff8787a67c1662432613cebd0ff7"
+    },
+    {
+      "file": "cam1_layer0169_spread.png",
+      "x": 1335,
+      "y": 1246,
+      "sha256": "875efe3466a27d51fef62aa02179900213d38c18cd2cf8fe839a715ef36beb6b"
+    }
+  ],
+  "bytes_read": 5109544
+}

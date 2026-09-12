@@ -1,0 +1,19 @@
+{
+  "expected_adjacent_overlap_tracks": 1,
+  "actual_peak_box_tracks": 2,
+  "events": [
+    {
+      "start_layer": 1,
+      "end_layer": 2,
+      "box": "[0, 0, 10, 10]",
+      "score": 5.0
+    },
+    {
+      "start_layer": 3,
+      "end_layer": 3,
+      "box": "[10, 0, 20, 10]",
+      "score": 2.0
+    }
+  ],
+  "conclusion": "Confirmed: the peak box prevents association of a drifting region that overlaps on every adjacent layer."
+}

@@ -1,0 +1,24 @@
+{
+  "Url": "http://127.0.0.1:53709/workspace",
+  "Pid": 12116,
+  "Libraries": 7,
+  "Names": [
+    "NIST · 100 layers / 200 photos",
+    "NIST · starter sample / 20 photos",
+    "NIST · 3D Scan Strategies · 200 photos",
+    "ORNL · 64 cylinders · 200 photos",
+    "Aalto · 2021-12-01 · 1,000 photos",
+    "Aalto · 2024-02-26 · 271 photos",
+    "Aalto · 2024-03-18 · 1,367 photos"
+  ],
+  "Selected": "NIST · 3D Scan Strategies · 200 photos",
+  "Images": 200,
+  "Indications": {
+    "a_examiner": 2397,
+    "ecartee": 3,
+    "retenue": 10
+  },
+  "ImageStatus": 200,
+  "ImageBytes": 253470,
+  "Error": null
+}

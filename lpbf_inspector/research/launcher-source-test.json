@@ -1,0 +1,17 @@
+{
+  "version": "0.3.0",
+  "frozen": false,
+  "executable": "C:\\Users\\gogov\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+  "ok": true,
+  "measured": 16,
+  "report_bytes": 97291,
+  "assets": {
+    "/": 5576,
+    "/workspace": 49737,
+    "/reports.js": 7059,
+    "/reports.css": 4302,
+    "/powder-ranger-icon.svg": 916,
+    "/api/state": 4039
+  },
+  "seconds": 1.28
+}

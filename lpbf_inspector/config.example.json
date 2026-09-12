@@ -1,0 +1,17 @@
+{
+  "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+  "phase_aliases": {"spread": "etalement", "fused": "fusion"},
+  "layer_thickness_um": 60,
+  "first_layer": 1,
+  "first_layer_z_mm": 0.06,
+  "tile_px": 16,
+  "history": 9,
+  "warmup": 5,
+  "sigma": 6.0,
+  "min_change_gray": 12.0,
+  "min_texture_change": 8.0,
+  "global_jump_gray": 12.0,
+  "drift_gray": 20.0,
+  "drift_alpha": 0.2,
+  "roi_by_camera": {}
+}

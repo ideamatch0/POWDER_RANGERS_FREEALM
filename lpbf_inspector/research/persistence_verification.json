@@ -1,0 +1,79 @@
+{
+  "nist200": {
+    "visible_by_minimum": {
+      "1": 334,
+      "2": 110,
+      "3": 64,
+      "5": 34
+    },
+    "seconds": 0.187,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  },
+  "nist20": {
+    "visible_by_minimum": {
+      "1": 167,
+      "2": 16,
+      "3": 8,
+      "5": 3
+    },
+    "seconds": 0.109,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  },
+  "nist_scan": {
+    "visible_by_minimum": {
+      "1": 4226,
+      "2": 963,
+      "3": 448,
+      "5": 188
+    },
+    "seconds": 0.39,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  },
+  "ornl_cylinders": {
+    "visible_by_minimum": {
+      "1": 3367,
+      "2": 494,
+      "3": 180,
+      "5": 50
+    },
+    "seconds": 0.313,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  },
+  "aalto_SI383820211201123521": {
+    "visible_by_minimum": {
+      "1": 26850,
+      "2": 21168,
+      "3": 19848,
+      "5": 18553
+    },
+    "seconds": 3.219,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  },
+  "aalto_SI383820240226095904": {
+    "visible_by_minimum": {
+      "1": 126,
+      "2": 70,
+      "3": 62,
+      "5": 30
+    },
+    "seconds": 0.078,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  },
+  "aalto_SI383820240318120348": {
+    "visible_by_minimum": {
+      "1": 37954,
+      "2": 26925,
+      "3": 23092,
+      "5": 19426
+    },
+    "seconds": 4.469,
+    "same_run_and_calibration": true,
+    "list_and_3d_consistent": true
+  }
+}

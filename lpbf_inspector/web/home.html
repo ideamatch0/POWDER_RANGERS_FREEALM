@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070b10">
+  <meta name="description" content="Powder Ranger — Every layer under watch. Choose how to inspect your additive manufacturing images.">
+  <title>Powder Ranger · Every layer under watch.</title>
+  <link rel="icon" type="image/svg+xml" href="/powder-ranger-icon.svg">
+  <link rel="stylesheet" href="/home.css">
+  <script src="/home.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#choose-mode">Choose a mode</a>
+  <div class="scene" aria-hidden="true">
+    <div class="atmosphere"></div>
+    <svg class="powder-bed" viewBox="0 0 1440 720" fill="none" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="bed-light" x1="720" y1="170" x2="720" y2="680" gradientUnits="userSpaceOnUse"><stop stop-color="#85d7ff" stop-opacity=".08"/><stop offset=".48" stop-color="#85d7ff" stop-opacity=".37"/><stop offset="1" stop-color="#85d7ff" stop-opacity="0"/></linearGradient>
+        <radialGradient id="powder-light"><stop stop-color="#a3d6f0" stop-opacity=".34"/><stop offset="1" stop-color="#a3d6f0" stop-opacity="0"/></radialGradient>
+        <pattern id="powder" width="24" height="22" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r=".65" fill="#a5cbdc" opacity=".2"/><circle cx="17" cy="15" r=".5" fill="#a5cbdc" opacity=".12"/></pattern>
+      </defs>
+      <path d="M42 418 720 204 1398 418 720 680Z" fill="url(#powder)"/>
+      <g stroke="url(#bed-light)" stroke-width=".8">
+        <path d="m42 418 678-214 678 214-678 262Z"/>
+        <path d="m42 442 678 262 678-262M42 464l678 262 678-262M42 486l678 262 678-262"/>
+        <path d="m220 362 678 262M384 310l678 249M549 258l678 236M1220 362 542 624M1056 310 378 559M891 258 213 494" opacity=".35"/>
+      </g>
+      <ellipse cx="720" cy="446" rx="555" ry="90" fill="url(#powder-light)" opacity=".15"/>
+      <path class="scan-line" d="m197 371 676 239" stroke="#91dcff" stroke-width="1.6"/>
+      <g class="scene-indication" stroke="#ff6374" stroke-width="1.5"><path d="M1130 378v-8h10m14 0h10v8m0 13v8h-10m-14 0h-10v-8"/><circle cx="1147" cy="384" r="3" fill="#ff6374" stroke="none"/></g>
+      <g stroke="#8db8cd" opacity=".15"><path d="M75 198h18m-9-9v18M1350 249h18m-9-9v18M218 553h18m-9-9v18M1282 564h18m-9-9v18"/></g>
+    </svg>
+    <div class="vignette"></div>
+  </div>
+
+  <header class="masthead">
+    <span class="edition"><span class="edition-mark" aria-hidden="true">PR<span>_</span></span> POWDER BED MONITORING</span>
+    <div class="header-actions"><button id="motion-toggle" type="button" hidden aria-label="Pause animation"><span id="motion-glyph" aria-hidden="true">Ⅱ</span><span id="motion-label">Pause</span></button><span class="local-status"><span aria-hidden="true"></span> Local analysis <i>/</i> LPBF</span></div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="brand-name">
+      <div class="emblem" aria-hidden="true">
+        <div class="emblem-halo"></div>
+        <img src="/powder-ranger-icon.svg" width="144" height="144" alt="">
+        <span class="emblem-glint"></span>
+      </div>
+      <p class="eyebrow">Inspection, layer by layer.</p>
+      <h1 id="brand-name"><span>Powder</span> <span class="ranger">Ranger</span></h1>
+      <p class="slogan" lang="en">Every layer under watch<span>.</span></p>
+      <div class="hero-rule" aria-hidden="true"><span></span><i></i><span></span></div>
+    </section>
+
+    <section class="mode-section" aria-labelledby="choose-mode">
+      <h2 id="choose-mode" tabindex="-1">Choose your inspection mode</h2>
+      <div class="mode-grid">
+        <a class="mode-card single" href="/workspace" aria-describedby="single-description">
+          <div class="card-top"><span class="mode-number">01 <i>/</i> INSPECT</span><span class="availability available">Available</span></div>
+          <div class="card-heading">
+            <svg viewBox="0 0 48 48" aria-hidden="true" fill="none"><path d="m7 17 17-9 17 9-17 9Z"/><path d="m7 25 17 9 17-9M7 33l17 9 17-9"/><path d="M24 8v18" opacity=".3"/></svg>
+            <h3>Single-job analysis</h3>
+          </div>
+          <p id="single-description">Spot changes, track persistence and explore your layers in 3D.</p>
+          <div class="card-action"><span>Start inspecting</span><span class="arrow" aria-hidden="true">↗</span></div>
+        </a>
+
+        <a class="mode-card reference" href="/workspace?mode=reference" aria-describedby="reference-description">
+          <div class="card-top"><span class="mode-number">02 <i>/</i> COMPARE</span><span class="availability upcoming">Coming soon</span></div>
+          <div class="card-heading">
+            <svg viewBox="0 0 48 48" aria-hidden="true" fill="none"><path d="M5 10h15v28H5zM28 10h15v28H28z"/><path d="M10 18h5m-5 7h5m18-7h5m-5 7h5" opacity=".45"/><path d="m20 24 4-4 4 4m-8 0 4 4 4-4"/></svg>
+            <h3>A job and its reference build</h3>
+          </div>
+          <p id="reference-description">A planned mode for comparing two builds and revealing their differences.</p>
+          <div class="card-action"><span>Explore comparison mode</span><span class="arrow" aria-hidden="true">↗</span></div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>Your images. Your insight. Your decisions.</span><span class="footer-detail">LPBF <i>/</i> POST-BUILD INSPECTION</span></footer>
+</body>
+</html>

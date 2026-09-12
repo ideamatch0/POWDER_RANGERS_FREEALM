@@ -1,0 +1,125 @@
+{
+  "date": "2026-09-09",
+  "images": 2638,
+  "evaluated": 2623,
+  "jobs": [
+    {
+      "job": "SI383820211201123521",
+      "signature": "cc36d37695ff5a1153f71799532cdab458ac4c490b41c6884a50e78913d80304",
+      "images": 1000,
+      "measured": 1000,
+      "evaluated": 995,
+      "warmup_images": 5,
+      "detections": 26850,
+      "flagged_images": 995,
+      "seconds": 69.609,
+      "step": 1,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 60.0,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.06,
+        "tile_px": 16,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      }
+    },
+    {
+      "job": "SI383820240226095904",
+      "signature": "e6246fe286a1d9c688a479343586e29509b7c81c7fc161f55fc30d12e1c3dedb",
+      "images": 271,
+      "measured": 271,
+      "evaluated": 266,
+      "warmup_images": 5,
+      "detections": 9152,
+      "flagged_images": 266,
+      "seconds": 19.016,
+      "step": 1,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 60.0,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.06,
+        "tile_px": 16,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      }
+    },
+    {
+      "job": "SI383820240318120348",
+      "signature": "08d5e38c466ff3a527466d7fb8709420075fa9d018a24b4d50432c56aff67acc",
+      "images": 1367,
+      "measured": 1367,
+      "evaluated": 1362,
+      "warmup_images": 5,
+      "detections": 37954,
+      "flagged_images": 1362,
+      "seconds": 99.031,
+      "step": 1,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 60.0,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.06,
+        "tile_px": 16,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      }
+    }
+  ],
+  "checks": [
+    "39 Python tests passed",
+    "JavaScript syntax and single-job workflow checks passed",
+    "Gallery predicted boxes and neighboring crop HTTP checks passed",
+    "3D projection, filtering and selection tests passed"
+  ],
+  "note": "All three libraries tested independently using their existing settings. Many changes are flagged; these counts do not measure detection accuracy. Physical Aalto phases remain unverified."
+}

@@ -1,0 +1,353 @@
+{
+  "running": false,
+  "progress": {
+    "stage": "termine",
+    "done": 200,
+    "total": 200,
+    "cached": 200,
+    "elapsed": 2.8589999999967404,
+    "eta": 0.0,
+    "layer": 101,
+    "camera": "cam1",
+    "phase": "fusion"
+  },
+  "error": null,
+  "run": "essai_ae619fa3876382ff",
+  "summary": {
+    "parcours_termine": true,
+    "images_indexees": 200,
+    "images_mesurees": 200,
+    "images_en_erreur": 0,
+    "indications": {
+      "a_examiner": 2397,
+      "ecartee": 3,
+      "retenue": 10
+    },
+    "observations_import_couverture": {
+      "initialisation": 10
+    },
+    "series": [
+      {
+        "camera": "cam1",
+        "phase": "etalement",
+        "images": 100,
+        "premiere": 2,
+        "derniere": 101
+      },
+      {
+        "camera": "cam1",
+        "phase": "fusion",
+        "images": 100,
+        "premiere": 2,
+        "derniere": 101
+      }
+    ]
+  },
+  "config": {
+    "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.png",
+    "phase_aliases": {
+      "spread": "etalement",
+      "fused": "fusion"
+    },
+    "layer_thickness_um": 20,
+    "first_layer": 1,
+    "first_layer_z_mm": 0.02,
+    "tile_px": 32,
+    "history": 9,
+    "warmup": 5,
+    "sigma": 6.0,
+    "min_change_gray": 40.0,
+    "min_texture_change": 26.666666666666664,
+    "global_jump_gray": 12.0,
+    "drift_gray": 20.0,
+    "drift_alpha": 0.2,
+    "roi_by_camera": {},
+    "intensity_white_level": 255.0,
+    "analysis_phases": [
+      "etalement",
+      "fusion"
+    ]
+  },
+  "dataset": {
+    "first": 2,
+    "last": 101,
+    "images": 200,
+    "layers": 100,
+    "layer_um": 20,
+    "fingerprint": "f3e0f6c84aac695f02bdca284ae18494c76dbaa90f3c8393e4ab83d73fa36f6a",
+    "bytes": 504816804,
+    "unmatched": 0,
+    "examples": [
+      {
+        "file": "cam1_layer0002_fused.png",
+        "camera": "cam1",
+        "phase": "fusion",
+        "layer": 2,
+        "z_mm": 0.04
+      },
+      {
+        "file": "cam1_layer0002_spread.png",
+        "camera": "cam1",
+        "phase": "etalement",
+        "layer": 2,
+        "z_mm": 0.04
+      },
+      {
+        "file": "cam1_layer0003_fused.png",
+        "camera": "cam1",
+        "phase": "fusion",
+        "layer": 3,
+        "z_mm": 0.06
+      },
+      {
+        "file": "cam1_layer0003_spread.png",
+        "camera": "cam1",
+        "phase": "etalement",
+        "layer": 3,
+        "z_mm": 0.06
+      },
+      {
+        "file": "cam1_layer0004_fused.png",
+        "camera": "cam1",
+        "phase": "fusion",
+        "layer": 4,
+        "z_mm": 0.08
+      }
+    ],
+    "cameras": [
+      "cam1"
+    ],
+    "phases": [
+      "etalement",
+      "fusion"
+    ],
+    "id": "nist_scan",
+    "name": "NIST · 3D Scan Strategies · 200 photos",
+    "mode": "temporal",
+    "note": "Separate build: layers 2–101, 20 µm. Post-spreading and post-melting photographs, original pixels converted losslessly to PNG.",
+    "source_url": "https://doi.org/10.18434/M32044",
+    "license": "https://www.nist.gov/open/license",
+    "has_roi": false,
+    "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\nist_scan_2_101",
+    "empty": false
+  },
+  "libraries": [
+    {
+      "id": "nist200",
+      "name": "NIST · 100 layers / 200 photos",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\nist_80_179",
+      "mode": "temporal",
+      "source_url": "https://doi.org/10.18434/M32233",
+      "license": "NIST",
+      "default_roi": {
+        "a": [
+          1000,
+          820,
+          1470,
+          1570
+        ]
+      },
+      "note": "One camera, illumination a. Documented layers and stages."
+    },
+    {
+      "id": "nist20",
+      "name": "NIST · starter sample / 20 photos",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\nist_sample",
+      "mode": "temporal",
+      "source_url": "https://doi.org/10.18434/M32233",
+      "license": "NIST",
+      "default_roi": {
+        "a": [
+          1000,
+          820,
+          1470,
+          1570
+        ]
+      },
+      "note": "One camera, illumination a. Documented layers and stages."
+    },
+    {
+      "id": "nist_scan",
+      "name": "NIST · 3D Scan Strategies · 200 photos",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\nist_scan_2_101",
+      "mode": "temporal",
+      "source_url": "https://doi.org/10.18434/M32044",
+      "license": "https://www.nist.gov/open/license",
+      "default_roi": {},
+      "note": "Separate build: layers 2–101, 20 µm. Post-spreading and post-melting photographs, original pixels converted losslessly to PNG."
+    },
+    {
+      "id": "ornl_cylinders",
+      "name": "ORNL · 64 cylinders · 200 photos",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\ornl_cylinders_70_169",
+      "mode": "temporal",
+      "source_url": "https://doi.org/10.13139/ORNLNCCS/2524534",
+      "license": "README du jeu : aucune restriction de réutilisation indiquée.",
+      "default_roi": {},
+      "note": "One build: layers 70–169, 100 µm. Unannotated visible channels, corrected by the producers for illumination and perspective. Public Hugging Face mirror; height relative to index 0."
+    },
+    {
+      "id": "aalto_SI383820211201123521",
+      "name": "Aalto · 2021-12-01 · 1,000 photos",
+      "job": "SI383820211201123521",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\aalto_pb",
+      "mode": "gallery",
+      "source_url": "https://zenodo.org/records/14996806",
+      "license": "CC BY 4.0",
+      "default_roi": {
+        "aalto": [
+          230,
+          170,
+          1280,
+          895
+        ]
+      },
+      "note": "Single-job analysis: initial gray level, changes and drift across acquisitions. Stages and physical heights are not assigned."
+    },
+    {
+      "id": "aalto_SI383820240226095904",
+      "name": "Aalto · 2024-02-26 · 271 photos",
+      "job": "SI383820240226095904",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\aalto_pb",
+      "mode": "gallery",
+      "source_url": "https://zenodo.org/records/14996806",
+      "license": "CC BY 4.0",
+      "default_roi": {
+        "aalto": [
+          230,
+          170,
+          1280,
+          895
+        ]
+      },
+      "note": "Single-job analysis: initial gray level, changes and drift across acquisitions. Stages and physical heights are not assigned."
+    },
+    {
+      "id": "aalto_SI383820240318120348",
+      "name": "Aalto · 2024-03-18 · 1,367 photos",
+      "job": "SI383820240318120348",
+      "source": "C:\\Users\\gogov\\Documents\\ChatGPT\\ALM\\lpbf_inspector\\datasets\\aalto_pb",
+      "mode": "gallery",
+      "source_url": "https://zenodo.org/records/14996806",
+      "license": "CC BY 4.0",
+      "default_roi": {
+        "aalto": [
+          230,
+          170,
+          1280,
+          895
+        ]
+      },
+      "note": "Single-job analysis: initial gray level, changes and drift across acquisitions. Stages and physical heights are not assigned."
+    }
+  ],
+  "revision": 17,
+  "operation": "analysis",
+  "review_settings": {
+    "min_consecutive": 4
+  },
+  "acquisition_step": 1,
+  "calibration": {
+    "channels": {
+      "cam1/etalement": {
+        "mean_gray": 106.73974977500002,
+        "std_gray": 2.006622878620152,
+        "sample_ids": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          26,
+          28,
+          30,
+          32,
+          34,
+          36,
+          38,
+          40
+        ],
+        "last_position": 21
+      },
+      "cam1/fusion": {
+        "mean_gray": 107.30321328750001,
+        "std_gray": 2.2242399982395176,
+        "sample_ids": [
+          1,
+          3,
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25,
+          27,
+          29,
+          31,
+          33,
+          35,
+          37,
+          39
+        ],
+        "last_position": 21
+      }
+    },
+    "sample_images": 40,
+    "mean_gray": 107.02148153125002,
+    "note": "Gris des 20 premières images par caméra et étape de ce job. Ces images ne sont pas déclarées saines."
+  },
+  "display_phases": [
+    "etalement",
+    "fusion"
+  ],
+  "analysis": {
+    "images": 200,
+    "measured": 200,
+    "evaluated": 190,
+    "flagged_images": 190,
+    "detections": 3652,
+    "warmup_images": 10,
+    "gaps": 0,
+    "errors": [],
+    "calibration_gray": 107.02148153125002,
+    "seconds": 2.8589999999967404,
+    "config": {
+      "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.png",
+      "phase_aliases": {
+        "spread": "etalement",
+        "fused": "fusion"
+      },
+      "layer_thickness_um": 20,
+      "first_layer": 1,
+      "first_layer_z_mm": 0.02,
+      "tile_px": 32,
+      "history": 9,
+      "warmup": 5,
+      "sigma": 6.0,
+      "min_change_gray": 40.0,
+      "min_texture_change": 26.666666666666664,
+      "global_jump_gray": 12.0,
+      "drift_gray": 20.0,
+      "drift_alpha": 0.2,
+      "roi_by_camera": {},
+      "intensity_white_level": 255.0,
+      "analysis_phases": [
+        "etalement",
+        "fusion"
+      ]
+    },
+    "note": "Single-job analysis, per camera and stage. No annotations or other jobs used."
+  }
+}

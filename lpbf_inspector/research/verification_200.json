@@ -1,0 +1,30 @@
+{
+  "run": "essai_7c48eba6f2f4bf40",
+  "images_analyzed": 200,
+  "analysis_seconds": 30.14100000000053,
+  "textures_verified": 200,
+  "texture_bytes": 1904791,
+  "http_verification_seconds": 8.46,
+  "indications": 182,
+  "event_checked": 96,
+  "crops": {
+    "tight": [
+      1696,
+      864,
+      1824,
+      992
+    ],
+    "standard": [
+      1632,
+      800,
+      1888,
+      1056
+    ],
+    "wide": [
+      1488,
+      672,
+      2000,
+      1184
+    ]
+  }
+}

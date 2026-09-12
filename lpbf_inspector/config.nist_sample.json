@@ -1,0 +1,18 @@
+{
+  "filename_regex": "(?P<phase>A|B)(?P<layer>[0-9]{4})(?P<camera>a)\\.PNG",
+  "phase_aliases": {"A": "etalement", "B": "fusion"},
+  "layer_thickness_um": 20,
+  "first_layer": 1,
+  "first_layer_z_mm": 0.02,
+  "tile_px": 32,
+  "history": 9,
+  "warmup": 5,
+  "sigma": 6.0,
+  "min_change_gray": 12.0,
+  "min_texture_change": 8.0,
+  "global_jump_gray": 12.0,
+  "drift_gray": 20.0,
+  "drift_alpha": 0.2,
+  "roi_by_camera": {},
+  "intensity_white_level": 65535
+}

@@ -1,0 +1,727 @@
+{
+  "nist200": {
+    "analysis": {
+      "images": 200,
+      "measured": 200,
+      "evaluated": 190,
+      "flagged_images": 188,
+      "detections": 930,
+      "warmup_images": 10,
+      "gaps": 0,
+      "errors": [],
+      "calibration_gray": 166.73323710019028,
+      "seconds": 37.56199999999808,
+      "config": {
+        "filename_regex": "(?P<phase>A|B)(?P<layer>[0-9]{4})(?P<camera>a)\\.PNG",
+        "phase_aliases": {
+          "A": "etalement",
+          "B": "fusion"
+        },
+        "layer_thickness_um": 20,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.02,
+        "tile_px": 32,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 40.0,
+        "min_texture_change": 26.666666666666664,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 65535,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Analyse du job seul, par caméra et étape. Aucune annotation ni autre job utilisé."
+    },
+    "calibration": {
+      "channels": {
+        "a/etalement": {
+          "mean_gray": 169.55773244484263,
+          "std_gray": 0.3328993919852779,
+          "sample_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "last_position": 99
+        },
+        "a/fusion": {
+          "mean_gray": 163.90874175553796,
+          "std_gray": 0.29696497891919477,
+          "sample_ids": [
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120
+          ],
+          "last_position": 99
+        }
+      },
+      "sample_images": 40,
+      "mean_gray": 166.73323710019028,
+      "note": "Gris des 20 premières images par caméra et étape de ce job. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 334,
+    "phases": {
+      "etalement": {
+        "frames": 100,
+        "indications": 151,
+        "axis": "layer"
+      },
+      "fusion": {
+        "frames": 100,
+        "indications": 183,
+        "axis": "layer"
+      }
+    },
+    "same_crop_for_neighbors": true
+  },
+  "nist20": {
+    "analysis": {
+      "images": 20,
+      "measured": 20,
+      "evaluated": 10,
+      "flagged_images": 10,
+      "detections": 198,
+      "warmup_images": 10,
+      "gaps": 0,
+      "errors": [],
+      "calibration_gray": 165.99389199577337,
+      "seconds": 4.125,
+      "config": {
+        "filename_regex": "(?P<phase>A|B)(?P<layer>[0-9]{4})(?P<camera>a)\\.PNG",
+        "phase_aliases": {
+          "A": "etalement",
+          "B": "fusion"
+        },
+        "layer_thickness_um": 20,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.02,
+        "tile_px": 32,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 65535,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Analyse du job seul, par caméra et étape. Aucune annotation ni autre job utilisé."
+    },
+    "calibration": {
+      "channels": {
+        "a/etalement": {
+          "mean_gray": 168.9704407252147,
+          "std_gray": 0.3002433698978035,
+          "sample_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "last_position": 129
+        },
+        "a/fusion": {
+          "mean_gray": 163.01734326633203,
+          "std_gray": 0.14346345019741205,
+          "sample_ids": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "last_position": 129
+        }
+      },
+      "sample_images": 20,
+      "mean_gray": 165.99389199577337,
+      "note": "Gris des 20 premières images par caméra et étape de ce job. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 167,
+    "phases": {
+      "etalement": {
+        "frames": 10,
+        "indications": 86,
+        "axis": "layer"
+      },
+      "fusion": {
+        "frames": 10,
+        "indications": 81,
+        "axis": "layer"
+      }
+    },
+    "same_crop_for_neighbors": true
+  },
+  "nist_scan": {
+    "analysis": {
+      "images": 200,
+      "measured": 200,
+      "evaluated": 190,
+      "flagged_images": 190,
+      "detections": 8672,
+      "warmup_images": 10,
+      "gaps": 0,
+      "errors": [],
+      "calibration_gray": 107.02148153125002,
+      "seconds": 26.32800000000134,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.png",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 20,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.02,
+        "tile_px": 32,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Analyse du job seul, par caméra et étape. Aucune annotation ni autre job utilisé."
+    },
+    "calibration": {
+      "channels": {
+        "cam1/etalement": {
+          "mean_gray": 106.73974977500002,
+          "std_gray": 2.006622878620152,
+          "sample_ids": [
+            2,
+            4,
+            6,
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20,
+            22,
+            24,
+            26,
+            28,
+            30,
+            32,
+            34,
+            36,
+            38,
+            40
+          ],
+          "last_position": 21
+        },
+        "cam1/fusion": {
+          "mean_gray": 107.30321328750001,
+          "std_gray": 2.2242399982395176,
+          "sample_ids": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11,
+            13,
+            15,
+            17,
+            19,
+            21,
+            23,
+            25,
+            27,
+            29,
+            31,
+            33,
+            35,
+            37,
+            39
+          ],
+          "last_position": 21
+        }
+      },
+      "sample_images": 40,
+      "mean_gray": 107.02148153125002,
+      "note": "Gris des 20 premières images par caméra et étape de ce job. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 4226,
+    "phases": {
+      "etalement": {
+        "frames": 100,
+        "indications": 2055,
+        "axis": "layer"
+      },
+      "fusion": {
+        "frames": 100,
+        "indications": 2171,
+        "axis": "layer"
+      }
+    },
+    "same_crop_for_neighbors": true
+  },
+  "ornl_cylinders": {
+    "analysis": {
+      "images": 200,
+      "measured": 200,
+      "evaluated": 190,
+      "flagged_images": 190,
+      "detections": 30614,
+      "warmup_images": 10,
+      "gaps": 0,
+      "errors": [],
+      "calibration_gray": 47.2828797789805,
+      "seconds": 76.28100000000268,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.png",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 100,
+        "first_layer": 0,
+        "first_layer_z_mm": 0,
+        "tile_px": 32,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Analyse du job seul, par caméra et étape. Aucune annotation ni autre job utilisé."
+    },
+    "calibration": {
+      "channels": {
+        "cam1/etalement": {
+          "mean_gray": 49.08783322676011,
+          "std_gray": 0.08167844195553191,
+          "sample_ids": [
+            2,
+            4,
+            6,
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20,
+            22,
+            24,
+            26,
+            28,
+            30,
+            32,
+            34,
+            36,
+            38,
+            40
+          ],
+          "last_position": 89
+        },
+        "cam1/fusion": {
+          "mean_gray": 45.477926331200884,
+          "std_gray": 0.5271521704989888,
+          "sample_ids": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11,
+            13,
+            15,
+            17,
+            19,
+            21,
+            23,
+            25,
+            27,
+            29,
+            31,
+            33,
+            35,
+            37,
+            39
+          ],
+          "last_position": 89
+        }
+      },
+      "sample_images": 40,
+      "mean_gray": 47.2828797789805,
+      "note": "Gris des 20 premières images par caméra et étape de ce job. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 22522,
+    "phases": {
+      "etalement": {
+        "frames": 100,
+        "indications": 8129,
+        "axis": "layer"
+      },
+      "fusion": {
+        "frames": 100,
+        "indications": 14393,
+        "axis": "layer"
+      }
+    },
+    "same_crop_for_neighbors": true
+  },
+  "aalto_SI383820211201123521": {
+    "analysis": {
+      "job": "SI383820211201123521",
+      "signature": "eb8053692f65e702da2d7caa8c82f329051372c2c8449633887650c3518dcf72",
+      "version": "single-job-2",
+      "mode": "single",
+      "images": 1000,
+      "measured": 1000,
+      "evaluated": 995,
+      "warmup_images": 5,
+      "gaps": 0,
+      "errors": [],
+      "cached": 1000,
+      "step": 1,
+      "detections": 26850,
+      "flagged_images": 995,
+      "calibration_gray": 127.4313835144043,
+      "seconds": 15.125,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 60.0,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.06,
+        "tile_px": 16,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Changements et dérives dans ce job. Les annotations et les autres jobs ne sont pas utilisés. Étapes physiques non identifiées."
+    },
+    "calibration": {
+      "version": "single-job-1",
+      "job": "SI383820211201123521",
+      "signature": "3dac686f96d3a28851d67c75ac37e0b4361549daaba14f2874ec0db4fcacecac",
+      "fingerprint": "2b4047ba00437dc71ecce1e3091a354aa76883f4eef5c021f1dd52a0a199ac84",
+      "step": 1,
+      "sample_images": 20,
+      "channels": {
+        "0": {
+          "mean_gray": 127.4313835144043,
+          "std_gray": 0.12354717525551227,
+          "sample_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "first_counter": 9,
+          "last_counter": 28
+        }
+      },
+      "mean_gray": 127.4313835144043,
+      "note": "Niveau de gris moyen des 20 premières acquisitions de chaque séquence. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 26850,
+    "phases": {
+      "acquisition": {
+        "frames": 1000,
+        "indications": 26850,
+        "axis": "acquisition"
+      }
+    },
+    "same_crop_for_neighbors": true
+  },
+  "aalto_SI383820240226095904": {
+    "analysis": {
+      "job": "SI383820240226095904",
+      "signature": "1695a0dd57901c35c94fc5edd96f35dfb4ee6a6484bd68c660549e3dd454d101",
+      "version": "single-job-2",
+      "mode": "single",
+      "images": 271,
+      "measured": 271,
+      "evaluated": 266,
+      "warmup_images": 5,
+      "gaps": 0,
+      "errors": [],
+      "cached": 271,
+      "step": 1,
+      "detections": 126,
+      "flagged_images": 92,
+      "calibration_gray": 126.99565204620362,
+      "seconds": 0.688,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 60.0,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.06,
+        "tile_px": 64,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 40.0,
+        "min_texture_change": 26.666666666666664,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Changements et dérives dans ce job. Les annotations et les autres jobs ne sont pas utilisés. Étapes physiques non identifiées."
+    },
+    "calibration": {
+      "version": "single-job-1",
+      "job": "SI383820240226095904",
+      "signature": "2158a1bb82c5bf971d69bb1efd05dbe9c3d4788dd5744cd293fd2f7a06a0b1aa",
+      "fingerprint": "08fd70a34a8b48230080b59eb6d706ac4cf5ea12d69801277ed35481871a5f5d",
+      "step": 1,
+      "sample_images": 20,
+      "channels": {
+        "0": {
+          "mean_gray": 126.99565204620362,
+          "std_gray": 0.13867474347796194,
+          "sample_ids": [
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1011,
+            1012,
+            1013,
+            1014,
+            1015,
+            1016,
+            1017,
+            1018,
+            1019,
+            1020
+          ],
+          "first_counter": 9,
+          "last_counter": 28
+        }
+      },
+      "mean_gray": 126.99565204620362,
+      "note": "Niveau de gris moyen des 20 premières acquisitions de chaque séquence. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 126,
+    "phases": {
+      "acquisition": {
+        "frames": 271,
+        "indications": 126,
+        "axis": "acquisition"
+      }
+    },
+    "same_crop_for_neighbors": true
+  },
+  "aalto_SI383820240318120348": {
+    "analysis": {
+      "job": "SI383820240318120348",
+      "signature": "98cf5d4c2d3431a5b9734367b390bd67de2f048fc41fbecdd4faaab790c94e50",
+      "version": "single-job-2",
+      "mode": "single",
+      "images": 1367,
+      "measured": 1367,
+      "evaluated": 1362,
+      "warmup_images": 5,
+      "gaps": 0,
+      "errors": [],
+      "cached": 1367,
+      "step": 1,
+      "detections": 37954,
+      "flagged_images": 1362,
+      "calibration_gray": 129.54461421966553,
+      "seconds": 17.578,
+      "config": {
+        "filename_regex": "(?P<camera>cam[0-9]+)_layer(?P<layer>[0-9]+)_(?P<phase>spread|fused)\\.jpe?g",
+        "phase_aliases": {
+          "spread": "etalement",
+          "fused": "fusion"
+        },
+        "layer_thickness_um": 60.0,
+        "first_layer": 1,
+        "first_layer_z_mm": 0.06,
+        "tile_px": 16,
+        "history": 9,
+        "warmup": 5,
+        "sigma": 6.0,
+        "min_change_gray": 12.0,
+        "min_texture_change": 8.0,
+        "global_jump_gray": 12.0,
+        "drift_gray": 20.0,
+        "drift_alpha": 0.2,
+        "roi_by_camera": {},
+        "intensity_white_level": 255.0,
+        "analysis_phases": [
+          "etalement",
+          "fusion"
+        ]
+      },
+      "note": "Changements et dérives dans ce job. Les annotations et les autres jobs ne sont pas utilisés. Étapes physiques non identifiées."
+    },
+    "calibration": {
+      "version": "single-job-1",
+      "job": "SI383820240318120348",
+      "signature": "6527c1e9a9cf0c4d06b4c41a39c43d23943deeb4d8e6b43a2b7e02795cd76035",
+      "fingerprint": "aa48acd03f7c44149281b2cf4a2075e1eaa5c77bb0be923055c7ed1de58a3559",
+      "step": 1,
+      "sample_images": 20,
+      "channels": {
+        "0": {
+          "mean_gray": 129.54461421966553,
+          "std_gray": 0.3500881330248511,
+          "sample_ids": [
+            1272,
+            1273,
+            1274,
+            1275,
+            1276,
+            1277,
+            1278,
+            1279,
+            1280,
+            1281,
+            1282,
+            1283,
+            1284,
+            1285,
+            1286,
+            1287,
+            1288,
+            1289,
+            1290,
+            1291
+          ],
+          "first_counter": 9,
+          "last_counter": 28
+        }
+      },
+      "mean_gray": 129.54461421966553,
+      "note": "Niveau de gris moyen des 20 premières acquisitions de chaque séquence. Ces images ne sont pas déclarées saines."
+    },
+    "review_events": 37954,
+    "phases": {
+      "acquisition": {
+        "frames": 1367,
+        "indications": 37954,
+        "axis": "acquisition"
+      }
+    },
+    "same_crop_for_neighbors": true
+  }
+}

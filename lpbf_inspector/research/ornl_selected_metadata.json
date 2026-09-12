@@ -1,0 +1,7 @@
+{
+  "core/build_name": "M2 AMMTO Fatigue Blanks 05",
+  "core/number_of_layers": "1117",
+  "material/layer_thickness": "0.1",
+  "material/layer_thickness/units": "mm",
+  "slices/indexing": "slice datasets are indexed starting at \"0\" using the print layer number"
+}

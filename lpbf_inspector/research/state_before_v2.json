@@ -1,0 +1,71 @@
+{
+  "running": false,
+  "progress": {
+    "stage": "termine",
+    "done": 100,
+    "total": 100,
+    "cached": 0,
+    "elapsed": 36.45300000000134,
+    "eta": 0.0,
+    "layer": 179,
+    "camera": "a",
+    "phase": "fusion"
+  },
+  "error": null,
+  "run": "essai_6b0c0e56ca9ecd08",
+  "summary": {
+    "parcours_termine": true,
+    "images_indexees": 100,
+    "images_mesurees": 100,
+    "images_en_erreur": 0,
+    "indications": {
+      "a_examiner": 655
+    },
+    "observations_import_couverture": {
+      "etape_exclue": 100,
+      "initialisation": 5
+    },
+    "series": [
+      {
+        "camera": "a",
+        "phase": "fusion",
+        "images": 100,
+        "premiere": 80,
+        "derniere": 179
+      }
+    ]
+  },
+  "config": {
+    "filename_regex": "(?P<phase>A|B)(?P<layer>[0-9]{4})(?P<camera>a)\\.PNG",
+    "phase_aliases": {
+      "A": "etalement",
+      "B": "fusion"
+    },
+    "layer_thickness_um": 20,
+    "first_layer": 1,
+    "first_layer_z_mm": 0.02,
+    "tile_px": 16,
+    "history": 9,
+    "warmup": 5,
+    "sigma": 6.0,
+    "min_change_gray": 40.0,
+    "min_texture_change": 26.666666666666664,
+    "global_jump_gray": 12.0,
+    "drift_gray": 20.0,
+    "drift_alpha": 0.2,
+    "roi_by_camera": {},
+    "intensity_white_level": 65535,
+    "analysis_phases": [
+      "fusion"
+    ]
+  },
+  "dataset": {
+    "name": "NIST · Overhang Part X4",
+    "first": 80,
+    "last": 179,
+    "images": 200,
+    "layers": 100,
+    "layer_um": 20,
+    "fingerprint": "ba497963aa1847bd5e0c6f78b95289b9e2c565b3a57f0f3659754d67b620b414"
+  }
+}
