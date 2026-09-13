@@ -1,0 +1,53 @@
+name: Publish Windows release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  package-and-publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install runtime and packaging dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r lpbf_inspector/requirements.txt pyinstaller
+
+      - name: Build the standalone application
+        working-directory: lpbf_inspector
+        run: python build_windows.py
+
+      - name: Create release archive and checksum
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          $release = "lpbf_inspector/release"
+          $stage = "release-stage/Powder Ranger"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "$release/Powder Ranger.exe" $stage
+          Copy-Item "lpbf_inspector/WINDOWS_QUICK_START.md" "$stage/QUICK_START_EN.md"
+          Compress-Archive -Path "$stage/*" -DestinationPath "$release/Powder_Ranger_${version}_Windows_x64_EN.zip" -Force
+          $hash = (Get-FileHash "$release/Powder_Ranger_${version}_Windows_x64_EN.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  Powder_Ranger_${version}_Windows_x64_EN.zip" | Set-Content "$release/SHA256SUMS.txt" -NoNewline
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          $version = $env:TAG_NAME.TrimStart("v")
+          gh release create $env:TAG_NAME "lpbf_inspector/release/Powder_Ranger_${version}_Windows_x64_EN.zip" "lpbf_inspector/release/SHA256SUMS.txt" --title "Powder Ranger $version" --notes "Windows offline package for Powder Ranger $version. Download the ZIP archive, extract it, then run Powder Ranger.exe."
