@@ -46,7 +46,7 @@ a {
 
 .hero-title-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 24px;
   align-items: center;
   margin-bottom: 18px;
@@ -74,11 +74,31 @@ a {
 }
 
 .hero-logo-large {
-  width: clamp(150px, 26vw, 320px);
+  width: clamp(88px, 11vw, 140px);
   height: auto;
-  justify-self: end;
+}
+
+.hero-logo-wrap {
+  display: grid;
+  place-items: center end;
   margin-left: auto;
+  padding: 6px;
+  border-radius: 50%;
   filter: drop-shadow(0 0 24px rgba(114, 183, 255, 0.35));
+  animation: logo-pulse 2.6s ease-in-out infinite;
+  justify-self: end;
+}
+
+@keyframes logo-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 16px rgba(114, 183, 255, 0.30));
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 26px rgba(112, 226, 255, 0.58));
+    transform: translateY(0px) scale(1.04);
+  }
 }
 
 h1 {
@@ -306,8 +326,7 @@ li {
   }
 
   .hero-logo-large {
-    width: 140px;
-    justify-self: start;
+    width: 96px;
   }
 
   h1 {
