@@ -80,13 +80,29 @@ a {
 
 .hero-logo-wrap {
   display: grid;
-  place-items: center end;
+  position: relative;
+  place-items: center;
   margin-left: auto;
   padding: 6px;
   border-radius: 50%;
   filter: drop-shadow(0 0 24px rgba(114, 183, 255, 0.35));
   animation: logo-pulse 2.6s ease-in-out infinite;
   justify-self: end;
+  isolation: isolate;
+}
+
+.hero-logo-wrap::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 330px;
+  height: 330px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 178, 255, 0.30) 0%, rgba(88, 178, 255, 0.12) 32%, transparent 70%);
+  filter: blur(4px);
 }
 
 @keyframes logo-pulse {
@@ -146,13 +162,7 @@ h1 {
 }
 
 .glow {
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(88, 178, 255, 0.28) 0%, transparent 70%);
-  top: 40px;
-  right: 6%;
-  filter: blur(4px);
+  display: none;
 }
 
 .logo-strip {
@@ -327,6 +337,11 @@ li {
 
   .hero-logo-large {
     width: 96px;
+  }
+
+  .hero-logo-wrap::before {
+    width: 240px;
+    height: 240px;
   }
 
   h1 {
