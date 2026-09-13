@@ -89,6 +89,9 @@ a {
   animation: logo-pulse 2.6s ease-in-out infinite;
   justify-self: end;
   isolation: isolate;
+  /* Position the icon in the open area of the hero, not in the title line. */
+  right: clamp(120px, 12vw, 215px);
+  top: clamp(60px, 6vw, 106px);
 }
 
 .hero-logo-wrap::before {
@@ -337,6 +340,13 @@ li {
 
   .hero-logo-large {
     width: 96px;
+  }
+
+  .hero-logo-wrap {
+    right: 0;
+    top: 0;
+    margin: 8px auto 0;
+    justify-self: center;
   }
 
   .hero-logo-wrap::before {
