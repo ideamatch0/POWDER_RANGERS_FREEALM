@@ -74,9 +74,10 @@ a {
 }
 
 .hero-logo-large {
-  width: clamp(120px, 22vw, 240px);
+  width: clamp(150px, 26vw, 320px);
   height: auto;
   justify-self: end;
+  margin-left: auto;
   filter: drop-shadow(0 0 24px rgba(114, 183, 255, 0.35));
 }
 
@@ -305,7 +306,7 @@ li {
   }
 
   .hero-logo-large {
-    width: 130px;
+    width: 140px;
     justify-self: start;
   }
 
