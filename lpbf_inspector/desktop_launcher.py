@@ -18,7 +18,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.1'
+APP_VERSION='0.3.2'
 
 
 def data_folder(override=None):
@@ -27,11 +27,28 @@ def data_folder(override=None):
 
 
 def install_current_executable():
-    """User-triggered, per-user installation; no administrator privileges needed."""
+    """Install for the current Windows user, without requiring elevation."""
     if not getattr(sys,'frozen',False):raise ValueError('Installation is available from the packaged Windows executable.')
-    programs=Path(os.environ['LOCALAPPDATA'])/'Programs'/'Powder Ranger';programs.mkdir(parents=True,exist_ok=True)
-    target=programs/'Powder Ranger.exe';source=Path(sys.executable).resolve()
-    if source!=target.resolve():shutil.copy2(source,target)
+    source=Path(sys.executable).resolve()
+    primary=Path(os.environ['LOCALAPPDATA'])/'Programs'/'Powder Ranger'
+    fallback=data_folder()/'App'
+    fallback_notice=None
+    def copy_to(folder):
+        folder.mkdir(parents=True,exist_ok=True)
+        target=folder/'Powder Ranger.exe'
+        if source!=target.resolve():
+            temporary=folder/'Powder Ranger.installing.exe'
+            try:
+                shutil.copy2(source,temporary)
+                os.replace(temporary,target)
+            finally:
+                if temporary.exists():temporary.unlink(missing_ok=True)
+        return target
+    try:
+        programs=primary;target=copy_to(primary)
+    except PermissionError:
+        programs=fallback;target=copy_to(fallback)
+        fallback_notice='Windows refused the standard Programs folder, so Powder Ranger was installed in its local application folder. It will work normally.'
     # Literal PowerShell strings escape single quotes. No values are interpolated as code.
     def literal(value):return "'"+str(value).replace("'","''")+"'"
     script=("$shell = New-Object -ComObject WScript.Shell\n"
@@ -47,8 +64,10 @@ def install_current_executable():
     encoded=base64.b64encode(script.encode('utf-16-le')).decode('ascii')
     result=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-EncodedCommand',encoded],
                           creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),capture_output=True,text=True,timeout=25)
-    if result.returncode:raise OSError('The executable was copied to '+str(target)+', but Windows could not create the shortcuts: '+result.stderr)
-    return target
+    if result.returncode:
+        shortcut_notice='The application was installed, but Windows could not create its shortcuts. You can run it from:\n'+str(target)
+        return target,(fallback_notice+'\n\n' if fallback_notice else '')+shortcut_notice
+    return target,fallback_notice
 
 
 def self_test(output,profile):
@@ -116,7 +135,7 @@ def main():
     lock=None;server=None
     try:
         if args.install:
-            target=install_current_executable();messagebox.showinfo('Powder Ranger installed','Installed to:\n'+str(target)+'\n\nDesktop and Start menu shortcuts are ready.',parent=window)
+            target,notice=install_current_executable();messagebox.showinfo('Powder Ranger installed','Installed to:\n'+str(target)+('\n\n'+notice if notice else '\n\nDesktop and Start menu shortcuts are ready.'),parent=window)
         if os.name=='nt':
             import msvcrt
             lock=(profile/'instance.lock').open('a+b');lock.seek(0)
@@ -145,7 +164,10 @@ def main():
         def button(text,command):tk.Button(window,text=text,command=command,font=('Segoe UI',10),bg='#1d3e4c',fg='white',activebackground='#2f6171',relief='flat',padx=14,pady=6).pack(pady=(10,0))
         button('Open Powder Ranger',lambda:webbrowser.open(url))
         def install():
-            try:messagebox.showinfo('Installation complete','Installed to:\n'+str(install_current_executable())+'\n\nShortcuts are available on your Desktop and Start menu.',parent=window)
+            try:
+                target,notice=install_current_executable()
+                message='Installed to:\n'+str(target)+('\n\n'+notice if notice else '\n\nShortcuts are available on your Desktop and Start menu.')
+                messagebox.showinfo('Installation complete',message,parent=window)
             except Exception as error:logging.exception('Install failed');messagebox.showerror('Installation failed',str(error),parent=window)
         if getattr(sys,'frozen',False):button('Install on this computer',install)
         def close():
