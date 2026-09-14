@@ -2,7 +2,7 @@
 
 **Every layer under watch.**
 
-Version 0.3.3 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.4 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
