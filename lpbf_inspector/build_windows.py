@@ -11,7 +11,7 @@ if __name__=='__main__':
     import PyInstaller.__main__
     excluded=['matplotlib','pandas','scipy','torch','tensorflow','cv2','IPython','pytest','h5py','sympy','notebook','jupyter','setuptools']
     PyInstaller.__main__.run([
-        '--noconfirm','--onefile','--windowed','--noupx','--name','Powder Ranger',
+        '--noconfirm','--onedir','--windowed','--noupx','--name','Powder Ranger',
         '--distpath',str(ROOT/'release'),'--workpath',str(ROOT/'.build-cache/work'),
         '--specpath',str(ROOT/'.build-cache'),'--add-data',str(ROOT/'web')+os.pathsep+'web',
         *[arg for name in excluded for arg in ('--exclude-module',name)],str(ROOT/'desktop_launcher.py')])

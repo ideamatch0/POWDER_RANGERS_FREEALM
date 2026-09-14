@@ -2,12 +2,12 @@
 
 **Every layer under watch.**
 
-Version 0.3.2 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.3 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
-1. Extract the ZIP to a local folder.
-2. Double-click **Powder Ranger.exe**. The first launch may take a little longer while the bundled runtime is extracted.
+1. Extract the complete ZIP to a local folder. Do not launch the executable from inside the ZIP and do not move it out of its extracted **Powder Ranger** folder.
+2. Open the extracted **Powder Ranger** folder and double-click **Powder Ranger.exe**.
 3. Your default browser opens the application. Keep the small Powder Ranger launcher window open while working.
 4. To install it for your Windows account, click **Install on this computer** in the launcher. This copies the executable into your local Programs folder and adds Desktop and Start menu shortcuts. Administrator rights are not required.
 
@@ -61,4 +61,4 @@ Reports contain only retained indications meeting the current persistence filter
 
 ## Rebuild from source
 
-Install the dependencies in `requirements.txt` and PyInstaller, then run `python build_windows.py` on Windows. The output is `release/Powder Ranger.exe`. Development entry point: `python local_app.py --port 8765`. Build reference: [PyInstaller documentation](https://pyinstaller.org/en/stable/usage.html).
+Install the dependencies in `requirements.txt` and PyInstaller, then run `python build_windows.py` on Windows. The output is `release/Powder Ranger/Powder Ranger.exe` and its supporting files. Development entry point: `python local_app.py --port 8765`. Build reference: [PyInstaller documentation](https://pyinstaller.org/en/stable/usage.html).
