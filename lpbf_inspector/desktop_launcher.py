@@ -18,7 +18,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.5'
+APP_VERSION='0.3.7'
 
 
 def data_folder(override=None):
@@ -127,20 +127,54 @@ def self_test(output,profile):
     return 0 if record['ok'] else 1
 
 
-def main():
-    parser=argparse.ArgumentParser(description='Powder Ranger desktop launcher')
-    parser.add_argument('--data-dir');parser.add_argument('--self-test',metavar='RESULT_JSON');parser.add_argument('--install',action='store_true')
-    args=parser.parse_args();profile=data_folder(args.data_dir);profile.mkdir(parents=True,exist_ok=True)
-    if args.self_test:return self_test(args.self_test,profile)
+def open_desktop_window(url):
+    import webview
+    webview.create_window('Powder Ranger', url, width=1440, height=920, min_size=(1100,720))
+    webview.start()
+
+
+def run_browser_launcher(url,app,server,profile,args):
     import tkinter as tk
     from tkinter import messagebox
-    from local_app import Application,ThreadingHTTPServer,make_handler
     window=tk.Tk();window.title('Powder Ranger');window.geometry('475x325');window.resizable(False,False);window.configure(bg='#0e1720')
-    log=RotatingFileHandler(profile/'launcher.log',maxBytes=500000,backupCount=2,encoding='utf-8');logging.basicConfig(level=logging.INFO,handlers=[log])
+    if args.install:
+        target,notice=install_current_executable();messagebox.showinfo('Powder Ranger installed','Installed to:\n'+str(target)+('\n\n'+notice if notice else '\n\nDesktop and Start menu shortcuts are ready.'),parent=window)
+    def label(text,size,color='#e4edf3'):
+        tk.Label(window,text=text,font=('Segoe UI',size),fg=color,bg='#0e1720').pack(pady=(10,0))
+    label('POWDER RANGER',22);label('Every layer under watch.',10,'#61d8cf');label('Local server is running',11)
+    label('Keep this window open while using the application.',9,'#9eb2c3')
+    def button(text,command):tk.Button(window,text=text,command=command,font=('Segoe UI',10),bg='#1d3e4c',fg='white',activebackground='#2f6171',relief='flat',padx=14,pady=6).pack(pady=(10,0))
+    button('Open Powder Ranger',lambda:webbrowser.open(url))
+    def install():
+        try:
+            target,notice=install_current_executable()
+            message='Installed to:\n'+str(target)+('\n\n'+notice if notice else '\n\nShortcuts are available on your Desktop and Start menu.')
+            messagebox.showinfo('Installation complete',message,parent=window)
+        except Exception as error:logging.exception('Install failed');messagebox.showerror('Installation failed',str(error),parent=window)
+    if getattr(sys,'frozen',False):button('Install on this computer',install)
+    def close():
+        if app.running:
+            if not messagebox.askyesno('Stop analysis?','An analysis is running. Stop it and close Powder Ranger?',parent=window):return
+            app.stop_event.set()
+        for task in getattr(app,'_report_tasks',{}).values():task['cancel'].set()
+        if app.running:window.after(150,finish_close)
+        else:window.destroy()
+    def finish_close():
+        if app.running:window.after(150,finish_close)
+        else:window.destroy()
+    window.protocol('WM_DELETE_WINDOW',close)
+    window.after(350,lambda:webbrowser.open(url));window.mainloop()
+
+
+def main():
+    parser=argparse.ArgumentParser(description='Powder Ranger desktop launcher')
+    parser.add_argument('--data-dir');parser.add_argument('--self-test',metavar='RESULT_JSON');parser.add_argument('--install',action='store_true');parser.add_argument('--browser',action='store_true')
+    args=parser.parse_args();profile=data_folder(args.data_dir);profile.mkdir(parents=True,exist_ok=True)
+    if args.self_test:return self_test(args.self_test,profile)
+    from local_app import Application,ThreadingHTTPServer,make_handler
+    log=RotatingFileHandler(profile/'launcher.log',maxBytes=500000,backupCount=2,encoding='utf-8');logging.basicConfig(level=logging.INFO,handlers=[log],force=True)
     lock=None;server=None
     try:
-        if args.install:
-            target,notice=install_current_executable();messagebox.showinfo('Powder Ranger installed','Installed to:\n'+str(target)+('\n\n'+notice if notice else '\n\nDesktop and Start menu shortcuts are ready.'),parent=window)
         if os.name=='nt':
             import msvcrt
             lock=(profile/'instance.lock').open('a+b');lock.seek(0)
@@ -155,46 +189,33 @@ def main():
                         connection=http.client.HTTPConnection('127.0.0.1',port,timeout=1)
                         try:connection.request('GET','/api/state');response=connection.getresponse();response.read();assert response.status==200
                         finally:connection.close()
-                        webbrowser.open(f'http://127.0.0.1:{port}/');window.destroy();return 0
+                        if args.browser:webbrowser.open(f'http://127.0.0.1:{port}/')
+                        else:open_desktop_window(f'http://127.0.0.1:{port}/')
+                        return 0
                     except (OSError,ValueError,AssertionError):time.sleep(.2)
                 raise OSError('Powder Ranger is already starting. Try opening it again in a few seconds.')
         app=Application(profile);server=ThreadingHTTPServer(('127.0.0.1',0),make_handler(app))
         url=f'http://127.0.0.1:{server.server_port}/'
         (profile/'instance.json').write_text(json.dumps({'pid':os.getpid(),'port':server.server_port}),encoding='utf-8')
         threading.Thread(target=server.serve_forever,daemon=True).start()
-        def label(text,size,color='#e4edf3'):
-            tk.Label(window,text=text,font=('Segoe UI',size),fg=color,bg='#0e1720').pack(pady=(10,0))
-        label('POWDER RANGER',22);label('Every layer under watch.',10,'#61d8cf');label('Local server is running',11)
-        label('Keep this window open while using the application.',9,'#9eb2c3')
-        def button(text,command):tk.Button(window,text=text,command=command,font=('Segoe UI',10),bg='#1d3e4c',fg='white',activebackground='#2f6171',relief='flat',padx=14,pady=6).pack(pady=(10,0))
-        button('Open Powder Ranger',lambda:webbrowser.open(url))
-        def install():
-            try:
-                target,notice=install_current_executable()
-                message='Installed to:\n'+str(target)+('\n\n'+notice if notice else '\n\nShortcuts are available on your Desktop and Start menu.')
-                messagebox.showinfo('Installation complete',message,parent=window)
-            except Exception as error:logging.exception('Install failed');messagebox.showerror('Installation failed',str(error),parent=window)
-        if getattr(sys,'frozen',False):button('Install on this computer',install)
-        def close():
-            if app.running:
-                if not messagebox.askyesno('Stop analysis?','An analysis is running. Stop it and close Powder Ranger?',parent=window):return
-                app.stop_event.set()
-            for task in getattr(app,'_report_tasks',{}).values():task['cancel'].set()
-            if app.running:window.after(150,finish_close)
-            else:window.destroy()
-        def finish_close():
-            if app.running:window.after(150,finish_close)
-            else:window.destroy()
-        window.protocol('WM_DELETE_WINDOW',close)
-        window.after(350,lambda:webbrowser.open(url));window.mainloop()
+        if args.browser or args.install:run_browser_launcher(url,app,server,profile,args)
+        else:
+            try:open_desktop_window(url)
+            except Exception:
+                logging.exception('Desktop window failed; falling back to browser launcher')
+                run_browser_launcher(url,app,server,profile,args)
     except Exception as error:
-        logging.exception('Launcher failed');messagebox.showerror('Powder Ranger',str(error)+'\n\nLog: '+str(profile/'launcher.log'),parent=window)
-        try:window.destroy()
-        except tk.TclError:pass
+        logging.exception('Launcher failed')
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+            window=tk.Tk();window.withdraw();messagebox.showerror('Powder Ranger',str(error)+'\n\nLog: '+str(profile/'launcher.log'),parent=window);window.destroy()
+        except Exception:pass
         return 1
     finally:
         if server:server.shutdown();server.server_close()
         if lock:lock.close()
+        logging.getLogger().removeHandler(log);log.close()
     return 0
 
 

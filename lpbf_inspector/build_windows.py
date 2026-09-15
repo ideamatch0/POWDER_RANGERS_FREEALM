@@ -14,4 +14,5 @@ if __name__=='__main__':
         '--noconfirm','--onedir','--windowed','--noupx','--name','Powder Ranger',
         '--distpath',str(ROOT/'release'),'--workpath',str(ROOT/'.build-cache/work'),
         '--specpath',str(ROOT/'.build-cache'),'--add-data',str(ROOT/'web')+os.pathsep+'web',
+        '--collect-submodules','webview','--collect-data','webview',
         *[arg for name in excluded for arg in ('--exclude-module',name)],str(ROOT/'desktop_launcher.py')])

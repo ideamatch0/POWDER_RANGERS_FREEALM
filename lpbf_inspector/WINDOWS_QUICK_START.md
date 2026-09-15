@@ -2,16 +2,16 @@
 
 **Every layer under watch.**
 
-Version 0.3.5 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.7 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
 1. Extract the complete ZIP to a local folder. Do not launch the executable from inside the ZIP and do not move it out of its extracted **Powder Ranger** folder.
 2. Open the extracted **Powder Ranger** folder and double-click **Powder Ranger.exe**.
-3. Your default browser opens the application. Keep the small Powder Ranger launcher window open while working.
-4. To install it for your Windows account, click **Install on this computer** in the launcher. This copies the executable into your local Programs folder and adds Desktop and Start menu shortcuts. Administrator rights are not required.
+3. Powder Ranger opens in its own desktop window. If the embedded WebView engine is unavailable, the application falls back to the browser launcher.
+4. To install it for your Windows account from the fallback launcher, click **Install on this computer**. This copies the executable and its bundled runtime into your local Programs folder and adds Desktop and Start menu shortcuts. Administrator rights are not required.
 
-Python is included. The application runs locally, using a loopback address with an automatically selected port. Image analysis and reports do not require an internet connection. This prototype executable is not digitally signed; Windows or company policies may require approval to run it. No security settings need to be disabled.
+Python is included. The interface is displayed in a local desktop WebView and the analysis engine runs on a loopback address with an automatically selected port. Image analysis and reports do not require an internet connection. This prototype executable is not digitally signed; Windows or company policies may require approval to run it. No security settings need to be disabled.
 
 ## Import your first build
 
