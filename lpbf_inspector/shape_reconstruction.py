@@ -81,6 +81,31 @@ def shape_preview(path, white, crop, contrast=3):
     return _cached_preview(str(p), stat.st_mtime_ns, stat.st_size, white, tuple(crop), contrast_value(contrast), SHAPE_VERSION)
 
 
+def part_overlap(path, white, box, contrast=3):
+    """Fraction of an event box covered by the extracted post-melting section."""
+    p = Path(path); stat = p.stat()
+    mask_bytes, width, height = _cached_mask(str(p), stat.st_mtime_ns, stat.st_size, white, contrast_value(contrast), SHAPE_VERSION)
+    mask = np.frombuffer(mask_bytes, dtype=np.bool_).reshape((height, width))
+    with Image.open(path) as original:
+        scale_x, scale_y = width / original.width, height / original.height
+    x0 = max(0, min(width, math.floor(float(box[0]) * scale_x)))
+    y0 = max(0, min(height, math.floor(float(box[1]) * scale_y)))
+    x1 = max(0, min(width, math.ceil(float(box[2]) * scale_x)))
+    y1 = max(0, min(height, math.ceil(float(box[3]) * scale_y)))
+    if x0 >= x1 or y0 >= y1:
+        return 0.0
+    return round(float(mask[y0:y1, x0:x1].mean()), 3)
+
+
+@lru_cache(maxsize=160)
+def _cached_mask(path, mtime, size, white, contrast, version):
+    with Image.open(path) as original:
+        im = Image.fromarray(np.uint8(np.rint(gray_pixels(original, Config(intensity_white_level=white)))))
+    mask, _ = section_mask(im, contrast)
+    array = np.asarray(mask) > 0
+    return array.tobytes(), mask.width, mask.height
+
+
 @lru_cache(maxsize=160)
 def _cached_preview(path, mtime, size, white, crop, contrast, version):
     with Image.open(path) as original:

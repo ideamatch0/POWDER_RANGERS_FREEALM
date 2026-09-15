@@ -12,6 +12,7 @@ if __name__=='__main__':
     excluded=['matplotlib','pandas','scipy','torch','tensorflow','cv2','IPython','pytest','h5py','sympy','notebook','jupyter','setuptools']
     PyInstaller.__main__.run([
         '--noconfirm','--onedir','--windowed','--noupx','--name','Powder Ranger',
+        '--icon',str(ROOT/'web'/'powder-ranger-icon.ico'),
         '--distpath',str(ROOT/'release'),'--workpath',str(ROOT/'.build-cache/work'),
         '--specpath',str(ROOT/'.build-cache'),'--add-data',str(ROOT/'web')+os.pathsep+'web',
         '--collect-submodules','webview','--collect-data','webview',

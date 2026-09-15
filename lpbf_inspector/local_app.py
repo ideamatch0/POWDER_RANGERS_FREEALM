@@ -21,7 +21,7 @@ import job_analysis
 from job_views import AcquisitionViews
 from persistence import minimum_count
 from priority import with_priority, priority_value, priority_text, PRIORITY_HELP, review_sort
-from shape_reconstruction import shape_preview, MAX_EDGE as SHAPE_EDGE
+from shape_reconstruction import shape_preview, part_overlap, MAX_EDGE as SHAPE_EDGE
 from reporting import ReportTasks, collect_report, create_report
 from http_api import make_handler
 from previews import preview
@@ -340,6 +340,7 @@ class Application(ReportTasks,AcquisitionViews):
             if self.library['mode']=='gallery':return self.acquisition_listing(query)
             order = review_sort(query.get('sort', ['layer'])[0])
             offset = max(0, int(query.get('offset', ['0'])[0]))
+            part_only = query.get('part', [''])[0] == '1'
             clauses, parameters = [], []
             for field, allowed in [('phase', {'etalement','fusion'}), ('status', {'a_examiner','retenue','ecartee'})]:
                 value = query.get(field, [''])[0]
@@ -360,24 +361,59 @@ class Application(ReportTasks,AcquisitionViews):
                 parameters.append(self.min_consecutive)
                 total = db.execute('SELECT COUNT(*) FROM events'+where, parameters).fetchone()[0]
                 after=query.get('after',[None])[0];next_id=None
-                if after is not None:
-                    anchor=db.execute('SELECT * FROM events WHERE id=?',(after,)).fetchone()
-                    if anchor is None:raise ValueError('Starting indication not found.')
-                    values=[anchor['start_layer'],anchor['id']]
-                    if order=='priority':values.insert(0,-priority_value(anchor['score'],anchor['end_layer']-anchor['start_layer']+1))
-                    placeholders=','.join('?' for _ in values)
-                    successor=db.execute('SELECT id FROM events'+where+f' AND ({columns})>({placeholders}) ORDER BY {columns} LIMIT 1',[*parameters,*values]).fetchone()
-                    next_id=successor['id'] if successor else None
-                    index=db.execute('SELECT COUNT(*) FROM events'+where+f' AND ({columns})<=({placeholders})',[*parameters,*values]).fetchone()[0]
-                    offset=(index//25)*25
-                offset=min(offset,((total-1)//25)*25 if total else 0)
-                rows = db.execute('SELECT * FROM events'+where+f' ORDER BY {columns} LIMIT 25 OFFSET ?', [*parameters,offset])
-                items = [with_priority(row) for row in rows]
+                if part_only:
+                    rows = [self.with_part_position(db, row) for row in db.execute('SELECT * FROM events'+where+f' ORDER BY {columns}', parameters)]
+                    before_part = len(rows)
+                    rows = [row for row in rows if row.get('on_part')]
+                    total = len(rows)
+                    if after is not None:
+                        index=next((i+1 for i,row in enumerate(rows) if str(row['id'])==str(after)),0)
+                        next_id=rows[index]['id'] if index<len(rows) else None
+                        offset=(index//25)*25
+                    offset=min(offset,((total-1)//25)*25 if total else 0)
+                    items = rows[offset:offset+25]
+                else:
+                    before_part = total
+                    if after is not None:
+                        anchor=db.execute('SELECT * FROM events WHERE id=?',(after,)).fetchone()
+                        if anchor is None:raise ValueError('Starting indication not found.')
+                        values=[anchor['start_layer'],anchor['id']]
+                        if order=='priority':values.insert(0,-priority_value(anchor['score'],anchor['end_layer']-anchor['start_layer']+1))
+                        placeholders=','.join('?' for _ in values)
+                        successor=db.execute('SELECT id FROM events'+where+f' AND ({columns})>({placeholders}) ORDER BY {columns} LIMIT 1',[*parameters,*values]).fetchone()
+                        next_id=successor['id'] if successor else None
+                        index=db.execute('SELECT COUNT(*) FROM events'+where+f' AND ({columns})<=({placeholders})',[*parameters,*values]).fetchone()[0]
+                        offset=(index//25)*25
+                    offset=min(offset,((total-1)//25)*25 if total else 0)
+                    rows = db.execute('SELECT * FROM events'+where+f' ORDER BY {columns} LIMIT 25 OFFSET ?', [*parameters,offset])
+                    items = [self.with_part_position(db, row) for row in rows]
                 result={'items':items, 'total':total, 'offset':offset,'sort':order,'before_persistence':before,'min_consecutive':self.min_consecutive}
+                result['before_part_filter']=before_part
                 if after is not None:result['next_id']=next_id
                 return result
             finally:
                 db.close()
+
+    def with_part_position(self, db, row):
+        event = with_priority(row)
+        event.update(consecutive_count=row['end_layer']-row['start_layer']+1)
+        event['part_overlap'] = None
+        event['on_part'] = None
+        try:
+            peak = db.execute('SELECT camera,layer FROM frames WHERE id=?', (row['peak_frame'],)).fetchone()
+            fusion = db.execute("SELECT path,size,mtime FROM frames WHERE camera=? AND phase='fusion' AND layer=? AND features IS NOT NULL AND error IS NULL",
+                                (row['camera'], peak['layer'] if peak else row['end_layer'])).fetchone()
+            if fusion:
+                path = Path(fusion['path']).resolve()
+                if self.source.resolve() in path.parents:
+                    verify_source(path,(fusion['size'],fusion['mtime']))
+                    overlap = part_overlap(path,self.config.intensity_white_level,json.loads(row['box']))
+                    event['part_overlap'] = overlap
+                    event['on_part'] = overlap >= .05
+        except Exception:
+            event['part_overlap'] = None
+            event['on_part'] = None
+        return event
 
     def detail(self, key, event_id, context='standard'):
         with self.lock:
@@ -390,7 +426,7 @@ class Application(ReportTasks,AcquisitionViews):
                 row = db.execute('SELECT * FROM events WHERE id=?', (event_id,)).fetchone()
                 if not row:
                     raise ValueError('Indication not found.')
-                event = with_priority(row)
+                event = self.with_part_position(db,row)
                 event.update(consecutive_count=row['end_layer']-row['start_layer']+1,persistence_start=row['start_layer'],persistence_end=row['end_layer'])
                 event['snapshot'] = event_fingerprint(row)
                 peak = db.execute('SELECT * FROM frames WHERE id=?', (row['peak_frame'],)).fetchone()
@@ -512,9 +548,11 @@ class Application(ReportTasks,AcquisitionViews):
                     box=json.loads(event['box'])
                     clipped=[max(crop[0],box[0]),max(crop[1],box[1]),min(crop[2],box[2]),min(crop[3],box[3])]
                     if clipped[0]>=clipped[2] or clipped[1]>=clipped[3] or event['peak_layer'] not in frame_layers:continue
+                    positioned=self.with_part_position(db,event)
                     events.append(with_priority({'id':event['id'],'box':clipped,'layer':event['peak_layer'],'z_mm':self.config.z(event['peak_layer']),
                                    'start_layer':event['start_layer'],'end_layer':event['end_layer'],'status':event['status'],'kind':event['kind'],'score':event['score'],
-                                   'consecutive_count':event['end_layer']-event['start_layer']+1}))
+                                   'consecutive_count':event['end_layer']-event['start_layer']+1,
+                                   'on_part':positioned.get('on_part'),'part_overlap':positioned.get('part_overlap')}))
                 return {'phase':phase,'phases':phases,'camera':camera,'cameras':channels,'frames':frames,'events':events,
                         'shape_available':phase=='fusion','shape_texture_max_px':SHAPE_EDGE,
                         'crop':crop,'width':crop[2]-crop[0],'height':crop[3]-crop[1],

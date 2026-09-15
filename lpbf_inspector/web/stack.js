@@ -72,7 +72,8 @@
     visibleEvents() {
       if(!this.metadata||!this.showEvents)return [];
       const layer=this.metadata.frames[this.cut]?.layer;
-      return (this.metadata.events||[]).filter(e=>e.layer<=layer && (this.eventFilter==='retained'?e.status==='retenue':e.status!=='ecartee') && (this.eventFilter!=='layer'||e.layer===layer));
+      const onPart=this.eventFilter.endsWith('_part'),mode=onPart?this.eventFilter.replace('_part',''):this.eventFilter;
+      return (this.metadata.events||[]).filter(e=>e.layer<=layer && (!onPart||e.on_part===true) && (mode==='retained'?e.status==='retenue':e.status!=='ecartee') && (mode!=='layer'||e.layer===layer));
     }
     project(x,y,z) {
       const m=this.metadata,rect=this.canvas.getBoundingClientRect(),max=Math.max(m.width,m.height);
@@ -239,7 +240,8 @@
       renderer.cut=index;renderer.step=Number(el('stack-step').value);renderer.opacity=Number(el('stack-opacity').value)/100;renderer.draw();
       renderer.showEvents=el('stack-markers').checked;renderer.eventFilter=el('stack-event-filter').value;
       renderer.scoreColors=el('stack-score-colors').checked;el('stack-score-legend').hidden=!renderer.scoreColors;
-      el('stack-events-count').textContent=renderer.visibleEvents().length+' visible indication(s) · minimum persistence: '+(metadata.min_consecutive||1)+(renderer.scoreColors?' · yellow → red: increasing priority score.':' · red markers.')+' Markers are placed at the peak and visible through the planes. Click a point to open its review and score.';
+      const partFilter=renderer.eventFilter.endsWith('_part')?' · on extracted part only':'';
+      el('stack-events-count').textContent=renderer.visibleEvents().length+' visible indication(s) · minimum persistence: '+(metadata.min_consecutive||1)+partFilter+(renderer.scoreColors?' · yellow → red: increasing priority score.':' · red markers.')+' Markers are placed at the peak and visible through the planes. Click a point to open its review and score.';
       const acquisition=metadata.axis==='acquisition';
       el('stack-layer-label').textContent=acquisition?'Acquisition '+frame.layer+' · capture order':'Layer '+frame.layer+' · Z = '+frame.z_mm.toFixed(3)+' mm';
       const photo=el('stack-photo');photo.style.aspectRatio=metadata.width+'/'+metadata.height;

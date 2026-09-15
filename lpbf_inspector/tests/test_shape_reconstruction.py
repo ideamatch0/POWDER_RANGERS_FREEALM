@@ -4,7 +4,7 @@ import tempfile
 import unittest
 import numpy as np
 from PIL import Image
-from shape_reconstruction import section_mask, shape_preview
+from shape_reconstruction import part_overlap, section_mask, shape_preview
 
 
 class ShapeTests(unittest.TestCase):
@@ -51,6 +51,12 @@ class ShapeTests(unittest.TestCase):
             Image.new('L',(200,160),80).save(path)
             data2,stats2=shape_preview(path,255,(0,0,200,160));self.assertEqual(stats2['coverage_percent'],0)
             self.assertNotEqual(data,data2)
+
+    def test_part_overlap_marks_boxes_on_extracted_shape(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'image.png';Image.fromarray(self.specimen()).save(path)
+            self.assertGreater(part_overlap(path,255,(40,30,70,60)),.9)
+            self.assertEqual(part_overlap(path,255,(80,70,110,88)),0)
 
 
 if __name__=='__main__':unittest.main()
