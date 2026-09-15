@@ -250,7 +250,8 @@ class AaltoLibrariesTests(unittest.TestCase):
         for image in [123,124,125]:self.app.aalto_result['images'][str(image)]['predictions']=[{'kind':'changement_local','box':[32,32,64,64],'score':2}]
         self.app.aalto_result['images']['126']['predictions']=[{'kind':'changement_local','box':[80,80,96,96],'score':2}]
         q={'run':[self.app.key],'sort':['priority'],'status':['a_examiner']}
-        listing=self.app.events(q);self.assertEqual(listing['items'][0]['priority_score'],50)
+        listing=self.app.events(q);self.assertEqual(listing['items'][0]['legacy_priority_score'],50)
+        self.assertGreater(listing['items'][0]['priority_score'],40)
         self.assertGreater(listing['items'][0]['priority_score'],listing['items'][-1]['priority_score'])
         event=listing['items'][0]
         self.app.decide({'run':self.app.key,'id':event['id'],'snapshot':event['snapshot'],'status':'ecartee'})

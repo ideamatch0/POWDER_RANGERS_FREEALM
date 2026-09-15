@@ -40,7 +40,7 @@ class AcquisitionViews:
             persistence=(signature,consecutive_runs(rows,self.acquisition_step));self._persistence_cache=persistence
         for row in rows:
             row.update(persistence[1][row['id']]);row.pop('geometry_key',None)
-            row.update(with_priority(row))
+            row.update(with_priority(row,getattr(self,'score_weights',None)))
         lookup={r['id']:r for r in rows};self._acquisition_events_cache=(cache_key,rows,lookup)
         return rows,lookup
 
@@ -116,7 +116,7 @@ class AcquisitionViews:
             if event['phase']!=phase or event['start_layer'] not in layers:continue
             box=json.loads(event['box']);clipped=[max(crop[0],box[0]),max(crop[1],box[1]),min(crop[2],box[2]),min(crop[3],box[3])]
             if clipped[0]>=clipped[2] or clipped[1]>=clipped[3]:continue
-            events.append({k:event[k] for k in ('id','start_layer','end_layer','status','kind','score','consecutive_count','priority_score','variation_component','persistence_component')}|
+            events.append({k:event[k] for k in ('id','start_layer','end_layer','status','kind','score','consecutive_count','priority_score','legacy_priority_score','variation_component','persistence_component','area_component','part_component','stage_component')}|
                           {'box':clipped,'layer':event['start_layer'],'position':event['start_layer'],'z_mm':None})
         return {'phase':phase,'phases':phases,'camera':'aalto','cameras':['aalto'],'frames':frames,'events':events,
                 'crop':crop,'width':crop[2]-crop[0],'height':crop[3]-crop[1],'excluded_dimensions':len(measured)-len(frames),

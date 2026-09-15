@@ -6,7 +6,7 @@ Powder Ranger uses a deterministic, no-training workflow. Each image is converte
 
 For each camera and process stage, the detector compares the current tile features with a short recent history. It uses the median and MAD of that history, with a fixed minimum threshold, so the threshold cannot collapse to zero on stable regions. It also tracks slow local drift with an EWMA and reports whole-image brightness jumps or drift.
 
-Adjacent flagged tiles are grouped into indications. Consecutive indications are merged when their rectangles overlap on successive layers. The review score is:
+Adjacent flagged tiles are grouped into indications. Consecutive indications are merged when their rectangles overlap on successive layers. Until v0.3.8, the review score was:
 
 `100 * sqrt(V * P)`, where `V = r / (r + 2)` and `P = n / (n + 3)`.
 
@@ -30,29 +30,30 @@ Adjacent flagged tiles are grouped into indications. Consecutive indications are
 - Overlap-based persistence may split a moving or growing phenomenon when the peak box shifts between layers.
 - Photographic part reconstruction is approximate. Reflections, shadows, cavities and low contrast can bias the extracted cyan shape.
 
-## Changes added in v0.3.8
+## Changes added in v0.3.8 and v0.3.9
 
 - Windows packaging now uses the Powder Ranger `.ico` file, so the executable and shortcuts should show the product icon instead of a generic icon.
 - Each time-series indication now gets an optional `on_part` flag based on overlap with the extracted post-melting section at the same layer and camera.
 - The review list includes an `On extracted part` filter.
 - The 3D stack includes matching filters for indications located on the extracted part.
+- A composite score is now used as the main `priority_score`. It includes intensity, persistence, event area, part overlap and stage weighting. The previous score is retained as `legacy_priority_score`.
+- Scoring weights are exposed in the review controls, normalized by the backend and saved with the local library preferences.
 
 The part filter is intentionally non-destructive. It hides indications from the current review view only; it does not delete decisions or raw detections.
 
 ## Recommended next improvements
 
-1. Split the priority score into visible components in the data model: intensity, persistence, area, part overlap and stage. Keep the current score for continuity, but add a configurable composite review score.
+1. Save the exact scoring weights into generated reports for traceability.
 2. Add a mask-editing workflow. The extracted cyan shape is useful, but operators should be able to correct it once per job or per layer range.
 3. Add event clustering across nearby boxes and adjacent layers. This would reduce duplicate review items when one physical phenomenon generates many small indications.
 4. Add a camera health panel: mean brightness, contrast, number of flagged areas per layer and drift trend. This helps separate optical drift from process events.
 5. Add a baseline/reference-job mode only after registration and normalization are explicit. Until then, single-job detection should stay independent of other jobs.
 6. Validate on a known dataset with operator labels. Use precision/recall for detection candidates and separate metrics for review workload reduction.
 
-## Suggested scoring upgrade
+## Integrated scoring upgrade
 
-A future score could remain explainable:
+The integrated score remains explainable:
 
 `review_score = 100 * (0.35*intensity + 0.25*persistence + 0.15*area + 0.20*part_overlap + 0.05*stage_weight)`
 
-The exact weights should be user-configurable and saved with the report. The software should present each component separately, because different users may prefer high sensitivity or reduced review workload.
-
+The current implementation uses these default weights, presents each component separately and lets the operator adjust the weights in the review controls. The backend normalizes the weights, so the user can set emphasis without manually keeping the sum equal to 1.

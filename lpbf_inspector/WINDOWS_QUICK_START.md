@@ -2,7 +2,7 @@
 
 **Every layer under watch.**
 
-Version 0.3.8 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.9 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
@@ -36,7 +36,7 @@ Run single-job analysis after checking the import. Initial gray-level calibratio
 
 Set the minimum consecutive persistence to reduce short-lived indications. Review in chronological or priority order; **Keep** and **Dismiss** save the decision and advance to the next indication. The before/peak/after crops use the same region and gray-level scale.
 
-The priority score combines change intensity and persistence. It prioritises review; it is not a defect probability or a material-quality classification. Researcher annotations do not drive single-job detection. Reference-job comparison remains a planned mode in this version.
+The priority score combines change intensity, persistence, indication area, overlap with the extracted part and process stage. It prioritises review; it is not a defect probability or a material-quality classification. Researcher annotations do not drive single-job detection. Reference-job comparison remains a planned mode in this version.
 
 ## Explore and export
 

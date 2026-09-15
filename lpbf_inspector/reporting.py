@@ -64,7 +64,8 @@ def report_context(app,key):
         return {'run':key,'revision':app.revision,'library_id':app.library['id'],'library_name':app.library['name'],
                 'retained':listing['total'],'before_persistence':listing.get('before_persistence',listing['total']),
                 'min_consecutive':app.min_consecutive,'templates':TEMPLATES,'defaults':options_for(None,app.library['name']),
-                'has_roi':bool(app.library.get('default_roi')),'acquisition':app.library['mode']=='gallery'}
+                'has_roi':bool(app.library.get('default_roi')),'acquisition':app.library['mode']=='gallery',
+                'score_weights':app.score_weights}
 
 
 def collect_report(app,key,data=None,expected_revision=None):
@@ -133,6 +134,7 @@ def collect_report(app,key,data=None,expected_revision=None):
         state=app.state()
         return deepcopy({'options':options,'run':key,'revision':app.revision,'library':{k:app.library.get(k) for k in ('id','name','source_url','license')},
                          'min_consecutive':app.min_consecutive,'before_persistence':first.get('before_persistence',count),
+                         'score_weights':app.score_weights,
                          'config':asdict(app.config),'acquisition':acquisition,'acquisition_step':app.acquisition_step,
                          'analysis':state['analysis'],'calibration':state['calibration'],'details':details,'scenes':scenes,
                          'warnings':warnings,'created_at':datetime.now().astimezone().isoformat(timespec='seconds')})
@@ -197,7 +199,8 @@ def create_report(snapshot,progress=lambda text:None):
             ('Initial gray level / 255',f"{cal['mean_gray']:.2f}" if cal.get('mean_gray') is not None else 'Unavailable'),
             ('Minimum threshold / 255',config.min_change_gray),('Tile size',str(config.tile_px)+' px'),('3D contrast',options['contrast'])]
     for label,value in fields:write('<div><dt>'+label+'</dt><dd>'+escape(str(value))+'</dd></div>')
-    write('</dl><p>'+escape(PRIORITY_HELP)+'</p><p>Researcher annotations are not used for these indications. The report records observations retained by the operator; it does not determine material conformity.</p>')
+    weights=snapshot.get('score_weights',{})
+    write('</dl><p>'+escape(PRIORITY_HELP)+'</p><p>Scoring weights used in this report: intensity '+f"{weights.get('intensity',0):.2f}"+', persistence '+f"{weights.get('persistence',0):.2f}"+', area '+f"{weights.get('area',0):.2f}"+', part overlap '+f"{weights.get('part',0):.2f}"+', stage '+f"{weights.get('stage',0):.2f}"+'.</p><p>Researcher annotations are not used for these indications. The report records observations retained by the operator; it does not determine material conformity.</p>')
     source=snapshot['library'].get('source_url');license=snapshot['library'].get('license')
     if source and re.match(r'^https?://',source):write('<p>Images : <a href="'+escape(source,quote=True)+'">library provenance</a>'+(' · '+escape(license) if license else '')+'</p>')
     write('</section><footer>Powder Ranger · Every layer under watch.<span>'+title+' · '+escape(options['date'])+'</span></footer></main></body></html>')

@@ -20,7 +20,7 @@ from libraries import LibraryCatalog, inventory as scan_inventory
 import job_analysis
 from job_views import AcquisitionViews
 from persistence import minimum_count
-from priority import with_priority, priority_value, priority_text, PRIORITY_HELP, review_sort
+from priority import with_priority, priority_text, PRIORITY_HELP, review_sort, DEFAULT_WEIGHTS, validate_weights
 from shape_reconstruction import shape_preview, part_overlap, MAX_EDGE as SHAPE_EDGE
 from reporting import ReportTasks, collect_report, create_report
 from http_api import make_handler
@@ -66,6 +66,7 @@ class Application(ReportTasks,AcquisitionViews):
         self.config=self.make_config(self.preferences.get(selected,{}))
         self.acquisition_step=self.make_step(self.preferences.get(selected,{}))
         self.min_consecutive=minimum_count(self.preferences.get(selected,{}).get('min_consecutive',1))
+        self.score_weights=validate_weights(self.preferences.get(selected,{}).get('score_weights'))
         self.gallery=[]
         self.aalto_result=None
         self.gray_calibration=None
@@ -116,14 +117,15 @@ class Application(ReportTasks,AcquisitionViews):
         self.preferences[self.library['id']]={'threshold':self.config.min_change_gray,'tile':self.config.tile_px,
                       'region':'parts' if self.config.roi_by_camera else 'full',
                       'analysis_phase':self.config.analysis_phases[0] if len(self.config.analysis_phases)==1 else 'both',
-                      'acquisition_step':self.acquisition_step,'min_consecutive':self.min_consecutive}
+                      'acquisition_step':self.acquisition_step,'min_consecutive':self.min_consecutive,
+                      'score_weights':self.score_weights}
         atomic_json(self.root/'web_settings.json',{'library':self.library['id'],'by_library':self.preferences})
 
     def select_library(self,key,_from_import=False):
         with self.lock:
             if self.running and not _from_import:raise ValueError('Wait for processing to finish before switching libraries.')
             if key not in self.catalog.entries:raise ValueError('Unknown library.')
-            attributes=('library','source','config','acquisition_step','min_consecutive','gallery','dataset','gray_calibration','aalto_result','project','error','progress','revision','preferences')
+            attributes=('library','source','config','acquisition_step','min_consecutive','score_weights','gallery','dataset','gray_calibration','aalto_result','project','error','progress','revision','preferences')
             previous={name:getattr(self,name) for name in attributes}
             previous['preferences']=deepcopy(self.preferences)
             try:
@@ -133,6 +135,7 @@ class Application(ReportTasks,AcquisitionViews):
                 self.config=self.make_config(self.preferences.get(key,{}))
                 self.acquisition_step=self.make_step(self.preferences.get(key,{}))
                 self.min_consecutive=minimum_count(self.preferences.get(key,{}).get('min_consecutive',1))
+                self.score_weights=validate_weights(self.preferences.get(key,{}).get('score_weights'))
                 self.gallery=[]
                 self.dataset=self.describe_inventory(self.library['summary']) if self.library.get('summary') else self.inventory()
                 self.load_job_results()
@@ -231,7 +234,7 @@ class Application(ReportTasks,AcquisitionViews):
                         'run': self.key, 'summary': report, 'config': asdict(self.config),
                         'dataset':dict(self.dataset),'libraries':self.catalog.list(),
                         'revision':self.revision,'operation':self.operation,
-                        'review_settings':{'min_consecutive':self.min_consecutive},
+                        'review_settings':{'min_consecutive':self.min_consecutive,'score_weights':self.score_weights,'default_score_weights':DEFAULT_WEIGHTS},
                         'acquisition_step':self.acquisition_step,'calibration':metadata(db,'gray_calibration') if db else self.gray_calibration,
                         'display_phases':self.acquisition_phases() if self.library['mode']=='gallery' else self.config.analysis_phases,
                         'analysis':self.aalto_result['report']['jobs'].get(self.library.get('job')) if self.aalto_result else metadata(db,'analysis_report') if db else None}
@@ -354,20 +357,30 @@ class Application(ReportTasks,AcquisitionViews):
             if not db:
                 return {'items': [], 'total': 0}
             try:
-                db.create_function('priority_value',2,priority_value,deterministic=True)
-                columns = '-priority_value(score,end_layer-start_layer+1),start_layer,id' if order=='priority' else 'start_layer,id'
+                columns = 'start_layer,id'
                 before = db.execute('SELECT COUNT(*) FROM events'+where, parameters).fetchone()[0]
                 where += (' AND ' if where else ' WHERE ')+'end_layer-start_layer+1>=?'
                 parameters.append(self.min_consecutive)
                 total = db.execute('SELECT COUNT(*) FROM events'+where, parameters).fetchone()[0]
                 after=query.get('after',[None])[0];next_id=None
-                if part_only:
-                    rows = [self.with_part_position(db, row) for row in db.execute('SELECT * FROM events'+where+f' ORDER BY {columns}', parameters)]
+                if part_only or order=='priority':
+                    rows = [self.with_part_position(db, row) for row in db.execute('SELECT * FROM events'+where+' ORDER BY start_layer,id', parameters)]
+                    if order=='priority':
+                        priority_key=lambda row:(-row['priority_score'],row['start_layer'],row['id'])
+                        rows.sort(key=priority_key)
                     before_part = len(rows)
-                    rows = [row for row in rows if row.get('on_part')]
+                    if part_only:
+                        rows = [row for row in rows if row.get('on_part')]
                     total = len(rows)
                     if after is not None:
-                        index=next((i+1 for i,row in enumerate(rows) if str(row['id'])==str(after)),0)
+                        anchor=db.execute('SELECT * FROM events WHERE id=?',(after,)).fetchone()
+                        if anchor is None:raise ValueError('Starting indication not found.')
+                        anchor=self.with_part_position(db,anchor)
+                        if order=='priority':
+                            key=priority_key(anchor)
+                            index=next((i for i,row in enumerate(rows) if priority_key(row)>key),len(rows))
+                        else:
+                            index=next((i+1 for i,row in enumerate(rows) if str(row['id'])==str(after)),0)
                         next_id=rows[index]['id'] if index<len(rows) else None
                         offset=(index//25)*25
                     offset=min(offset,((total-1)//25)*25 if total else 0)
@@ -378,7 +391,6 @@ class Application(ReportTasks,AcquisitionViews):
                         anchor=db.execute('SELECT * FROM events WHERE id=?',(after,)).fetchone()
                         if anchor is None:raise ValueError('Starting indication not found.')
                         values=[anchor['start_layer'],anchor['id']]
-                        if order=='priority':values.insert(0,-priority_value(anchor['score'],anchor['end_layer']-anchor['start_layer']+1))
                         placeholders=','.join('?' for _ in values)
                         successor=db.execute('SELECT id FROM events'+where+f' AND ({columns})>({placeholders}) ORDER BY {columns} LIMIT 1',[*parameters,*values]).fetchone()
                         next_id=successor['id'] if successor else None
@@ -395,10 +407,9 @@ class Application(ReportTasks,AcquisitionViews):
                 db.close()
 
     def with_part_position(self, db, row):
-        event = with_priority(row)
-        event.update(consecutive_count=row['end_layer']-row['start_layer']+1)
-        event['part_overlap'] = None
-        event['on_part'] = None
+        base = dict(row)
+        base['part_overlap'] = None
+        base['on_part'] = None
         try:
             peak = db.execute('SELECT camera,layer FROM frames WHERE id=?', (row['peak_frame'],)).fetchone()
             fusion = db.execute("SELECT path,size,mtime FROM frames WHERE camera=? AND phase='fusion' AND layer=? AND features IS NOT NULL AND error IS NULL",
@@ -408,11 +419,13 @@ class Application(ReportTasks,AcquisitionViews):
                 if self.source.resolve() in path.parents:
                     verify_source(path,(fusion['size'],fusion['mtime']))
                     overlap = part_overlap(path,self.config.intensity_white_level,json.loads(row['box']))
-                    event['part_overlap'] = overlap
-                    event['on_part'] = overlap >= .05
+                    base['part_overlap'] = overlap
+                    base['on_part'] = overlap >= .05
         except Exception:
-            event['part_overlap'] = None
-            event['on_part'] = None
+            base['part_overlap'] = None
+            base['on_part'] = None
+        event = with_priority(base,self.score_weights)
+        event.update(consecutive_count=row['end_layer']-row['start_layer']+1,on_part=base['on_part'])
         return event
 
     def detail(self, key, event_id, context='standard'):
@@ -481,6 +494,7 @@ class Application(ReportTasks,AcquisitionViews):
         with self.lock:
             self.require_run(data.get('run'),writable=True)
             self.min_consecutive=minimum_count(data.get('min_consecutive'))
+            if 'score_weights' in data:self.score_weights=validate_weights(data.get('score_weights'))
             self.revision+=1;self.save_preferences()
             return self.state()
 
@@ -549,10 +563,9 @@ class Application(ReportTasks,AcquisitionViews):
                     clipped=[max(crop[0],box[0]),max(crop[1],box[1]),min(crop[2],box[2]),min(crop[3],box[3])]
                     if clipped[0]>=clipped[2] or clipped[1]>=clipped[3] or event['peak_layer'] not in frame_layers:continue
                     positioned=self.with_part_position(db,event)
-                    events.append(with_priority({'id':event['id'],'box':clipped,'layer':event['peak_layer'],'z_mm':self.config.z(event['peak_layer']),
-                                   'start_layer':event['start_layer'],'end_layer':event['end_layer'],'status':event['status'],'kind':event['kind'],'score':event['score'],
-                                   'consecutive_count':event['end_layer']-event['start_layer']+1,
-                                   'on_part':positioned.get('on_part'),'part_overlap':positioned.get('part_overlap')}))
+                    marker = dict(positioned)
+                    marker.update(box=clipped,layer=event['peak_layer'],z_mm=self.config.z(event['peak_layer']))
+                    events.append(marker)
                 return {'phase':phase,'phases':phases,'camera':camera,'cameras':channels,'frames':frames,'events':events,
                         'shape_available':phase=='fusion','shape_texture_max_px':SHAPE_EDGE,
                         'crop':crop,'width':crop[2]-crop[0],'height':crop[3]-crop[1],
