@@ -37,6 +37,11 @@ def install_current_executable():
         folder.mkdir(parents=True,exist_ok=True)
         target=folder/'Powder Ranger.exe'
         if source!=target.resolve():
+            # Folder builds require the runtime beside the executable. Copy it
+            # before publishing the executable or creating any shortcuts.
+            runtime=source.parent/'_internal'
+            if runtime.is_dir():
+                shutil.copytree(runtime,folder/'_internal',dirs_exist_ok=True)
             temporary=folder/'Powder Ranger.installing.exe'
             try:
                 shutil.copy2(source,temporary)
