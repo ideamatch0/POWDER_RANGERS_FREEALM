@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Install runtime and packaging dependencies
         run: |
@@ -29,6 +29,20 @@ jobs:
       - name: Build the standalone application
         working-directory: lpbf_inspector
         run: python build_windows.py
+
+      - name: Verify the packaged application starts
+        shell: pwsh
+        run: |
+          $exe = "lpbf_inspector/release/Powder Ranger/Powder Ranger.exe"
+          $result = "lpbf_inspector/release/windows-binary-test.json"
+          $process = Start-Process -FilePath $exe -ArgumentList "--self-test", $result -PassThru
+          if (-not $process.WaitForExit(90000)) {
+            Stop-Process -Id $process.Id -Force
+            throw "The packaged application did not complete its start-up test within 90 seconds."
+          }
+          if ($process.ExitCode -ne 0) { throw "The packaged application exited with code $($process.ExitCode)." }
+          $test = Get-Content $result -Raw | ConvertFrom-Json
+          if (-not $test.ok) { throw "The packaged application reported a failed start-up test." }
 
       - name: Create release archive and checksum
         shell: pwsh
