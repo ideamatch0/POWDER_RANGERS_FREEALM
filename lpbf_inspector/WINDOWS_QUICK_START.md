@@ -2,7 +2,7 @@
 
 **Every layer under watch.**
 
-Version 0.3.9 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.10 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
@@ -17,7 +17,7 @@ Python is included. The interface is displayed in a local desktop WebView and th
 
 Choose **Single-job analysis**, then **Import folder**. Enter the full path to a folder on this computer and configure the filename pattern, stage aliases and layer thickness (for example, **60 µm**).
 
-One image library represents one build. Images are read from their original folder; they are not copied into the application or modified. Keep that folder accessible. Public sample datasets are not included in the executable or ZIP.
+One image library represents one build. Images are read from their original folder; they are not copied into the application or modified. Keep that folder accessible. If the last selected image folder is missing or its drive is disconnected, Powder Ranger opens the import screen with an explanation instead of stopping. Saved libraries, analyses and decisions are preserved; reconnect the drive and select the library again. Public sample datasets are not included in the executable or ZIP.
 
 Example names recognized by the default importer:
 

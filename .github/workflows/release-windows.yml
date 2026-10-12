@@ -26,6 +26,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r lpbf_inspector/requirements.txt pyinstaller
 
+      - name: Run regression tests
+        working-directory: lpbf_inspector
+        run: python -m unittest discover -s tests -q
+
       - name: Build the standalone application
         working-directory: lpbf_inspector
         run: python build_windows.py
@@ -43,6 +47,8 @@ jobs:
           if ($process.ExitCode -ne 0) { throw "The packaged application exited with code $($process.ExitCode)." }
           $test = Get-Content $result -Raw | ConvertFrom-Json
           if (-not $test.ok) { throw "The packaged application reported a failed start-up test." }
+          if (-not $test.offline_startup_recovered) { throw "The packaged application did not recover from an unavailable saved image folder." }
+          if ($test.version -ne "${{ github.ref_name }}".TrimStart("v")) { throw "The packaged version does not match its release tag." }
 
       - name: Create release archive and checksum
         shell: pwsh

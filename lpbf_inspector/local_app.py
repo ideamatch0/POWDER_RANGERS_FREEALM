@@ -59,7 +59,14 @@ class Application(ReportTasks,AcquisitionViews):
         saved=json.loads(settings.read_text(encoding='utf-8')) if settings.is_file() else {}
         selected=saved.get('library',next(iter(self.catalog.entries)))
         if selected=='aalto':selected=next((key for key in self.catalog.entries if key.startswith('aalto_')), selected)
+        if selected=='empty' and selected not in self.catalog.entries:self.catalog.ensure_empty()
         if selected not in self.catalog.entries:selected=next(iter(self.catalog.entries))
+        if source is None and not self.catalog.is_available(self.catalog.entries[selected]):
+            missing=self.catalog.entries[selected]
+            selected=self.catalog.ensure_empty()['id']
+            self.error=('Saved image folder is unavailable: '+missing['source']+'. '
+                        'Reconnect the drive, select an available library or import a folder to continue. '
+                        'Your saved jobs and results are preserved.')
         self.preferences=saved.get('by_library',{selected:saved})
         self.library=self.catalog.entries[selected]
         self.source=Path(self.library['source'])

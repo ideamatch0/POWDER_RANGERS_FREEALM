@@ -92,11 +92,26 @@ class LibraryCatalog:
         if self.path.is_file():
             for item in json.loads(self.path.read_text(encoding='utf-8')):
                 if item['id']!='aalto' and item['id'] not in self.entries:self.entries[item['id']]=item
-        if not self.entries:
-            location=self.root/'empty-library';location.mkdir(parents=True,exist_ok=True)
-            self.entries['empty']={'id':'empty','name':'Import your first job','source':str(location.resolve()),
-                'config':asdict(Config()),'mode':'temporal','default_roi':{},'empty':True,
-                'note':'No image library is installed. Use Import folder to add one build from this computer.'}
+        if not self.entries or (source is None and not any(self.is_available(e) for e in self.entries.values())):
+            self.ensure_empty()
+
+    def ensure_empty(self):
+        location=self.root/'empty-library';location.mkdir(parents=True,exist_ok=True)
+        self.entries['empty']={'id':'empty','name':'Import your first job','source':str(location.resolve()),
+            'config':asdict(Config()),'mode':'temporal','default_roi':{},'empty':True,
+            'note':'Use Import folder to add a build, or select an available image library.'}
+        return self.entries['empty']
+
+    @staticmethod
+    def is_available(entry):
+        """An offline image folder must not prevent opening the application."""
+        if entry.get('empty'):
+            return True
+        try:
+            source=Path(entry['source'])
+            return source.is_dir() and (entry['mode']!='gallery' or (source/'provenance.json').is_file())
+        except OSError:
+            return False
 
     def list(self):
         return [{k:v for k,v in e.items() if k not in {'config','summary','gallery_info'}} for e in list(self.entries.values())]

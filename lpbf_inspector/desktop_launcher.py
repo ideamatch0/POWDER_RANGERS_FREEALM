@@ -18,7 +18,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.9'
+APP_VERSION='0.3.10'
 
 
 def data_folder(override=None):
@@ -93,6 +93,18 @@ def self_test(output,profile):
         with tempfile.TemporaryDirectory(prefix='acceptance-',dir=profile) as directory:
             root=Path(directory);app=Application(root)
             assert app.dataset.get('empty') and app.dataset['images']==0
+            # Test the actual frozen binary against an unavailable saved drive.
+            offline=root/'offline-profile';offline.mkdir()
+            saved_entry={'id':'local_offline','name':'Offline job','source':str(root/'disconnected-drive'),
+                         'mode':'temporal','config':asdict(Config()),'default_roi':{}}
+            saved_catalog=json.dumps([saved_entry])
+            (offline/'libraries.json').write_text(saved_catalog,encoding='utf-8')
+            (offline/'web_settings.json').write_text(json.dumps({'library':saved_entry['id']}),encoding='utf-8')
+            recovered=Application(offline)
+            assert recovered.dataset['empty'] and recovered.dataset['images']==0
+            assert saved_entry['source'] in recovered.error
+            assert (offline/'libraries.json').read_text(encoding='utf-8')==saved_catalog
+            record['offline_startup_recovered']=True
             source=root/'test-images';source.mkdir()
             for layer in range(1,9):
                 for phase in ('spread','fused'):
