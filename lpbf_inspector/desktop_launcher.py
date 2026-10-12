@@ -18,7 +18,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.12'
+APP_VERSION='0.3.13'
 
 
 def data_folder(override=None):
@@ -111,12 +111,18 @@ def self_test(output,profile):
                     a=np.full((100,100),90,np.uint8)
                     if phase=='fused':a[30:60,30:60]=100+np.indices((30,30)).sum(axis=0)%3*60
                     if layer==7:a[64:80,64:80]=240
-                    Image.fromarray(a).save(source/f'cam1_layer{layer}_{phase}.jpg',quality=100)
-            entry=app.catalog.add({'path':str(source),'name':'Executable acceptance test','config':asdict(Config())},lambda **kw:None,lambda:False)
+                    image=Image.fromarray(a).convert('P')
+                    image.putpalette([value for gray in range(256) for value in (gray,gray,gray)])
+                    image.save(source/f'cam1_layer{layer}_{phase}.png')
+            config=Config(filename_regex=r'(?P<camera>cam\d+)_layer(?P<layer>\d+)_(?P<phase>spread|fused)\.png')
+            entry=app.catalog.add({'path':str(source),'name':'Executable acceptance test','config':asdict(config)},lambda **kw:None,lambda:False)
             app.select_library(entry['id']);app.start({'threshold':12,'tile':16,'analysis_phase':'both'})
             deadline=time.monotonic()+60
             while app.running and time.monotonic()<deadline:time.sleep(.05)
             assert not app.running and not app.error,app.error
+            assert app.state()['analysis']['measured']==16
+            assert not app.state()['analysis']['errors']
+            record['palette_png_supported']=True
             event=app.events({'run':[app.key]})['items'][0];detail=app.detail(app.key,event['id'])
             app.decide({'run':app.key,'id':event['id'],'snapshot':detail['event']['snapshot'],'status':'retenue','comment':'Standalone binary check'})
             report=app.report(app.key,{'job_name':'Standalone acceptance report','template':'summary','planes':32})

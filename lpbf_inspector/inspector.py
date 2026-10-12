@@ -23,7 +23,7 @@ import zlib
 import numpy as np
 from PIL import Image
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 PHASES = {"etalement", "fusion"}
 
 
@@ -227,9 +227,10 @@ def unpack(blob):
 
 
 def gray_pixels(image, config):
-    if image.mode in {"L", "RGB", "RGBA"}:
+    if image.mode in {"L", "P", "RGB", "RGBA"}:
         if config.intensity_white_level != 255:
             raise ValueError("An 8-bit image requires intensity_white_level=255.")
+        # Palette indices are not intensities: apply the palette before measuring.
         return np.asarray(image.convert('L'), dtype=np.float32)
     if image.mode in {"I;16", "I;16L", "I;16B", "I"}:
         if config.intensity_white_level <= 255:

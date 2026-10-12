@@ -135,6 +135,37 @@ class PipelineTests(unittest.TestCase):
         self.assertAlmostEqual(light,106.25,places=4)
         self.assertAlmostEqual(float(features[0,1,1])+light,200.,places=4)
 
+    def test_palette_png_measures_colors_instead_of_indices(self):
+        indices = np.zeros((16,16), np.uint8)
+        indices[8:,8:] = 1
+        image = Image.fromarray(indices).convert('P')
+        # Deliberately reversed brightness: index 0 is bright, index 1 is dark.
+        image.putpalette([200,200,200,40,40,40] + [0]*762)
+        file = self.source/'palette.png'
+        image.save(file)
+        with Image.open(file) as saved:
+            self.assertEqual(saved.mode, 'P')
+        features, light, _ = extract(file, self.config, 'cam1')
+        self.assertAlmostEqual(light,160.)
+        self.assertAlmostEqual(float(features[0,0,0])+light,200.)
+        self.assertAlmostEqual(float(features[0,1,1])+light,40.)
+        with self.assertRaisesRegex(ValueError,'8-bit'):
+            extract(file,Config(intensity_white_level=65535),'cam1')
+
+    def test_palette_png_job_is_measured_and_detects_local_change(self):
+        for layer in range(1,8):
+            pixels = np.full((64,80),100,np.uint8)
+            if layer==5:pixels[16:32,24:40]=200
+            image = Image.fromarray(pixels).convert('P')
+            image.putpalette([v for gray in range(256) for v in (gray,gray,gray)])
+            image.save(self.source/f'cam1_layer{layer}_spread.png')
+        config = Config(tile_px=8, history=5, warmup=3,
+                        filename_regex=r'(?P<camera>cam\d+)_layer(?P<layer>\d+)_(?P<phase>spread|fused)\.png')
+        result = analyze(self.source,self.project,config)
+        self.assertEqual(result['images_mesurees'],7)
+        self.assertEqual(result['images_en_erreur'],0)
+        self.assertTrue(any(r['start_layer']==5 for r in self.rows()))
+
     def test_review_persists_decisions_and_escapes_comments(self):
         for layer in range(1,8):
             self.make(layer, defect=layer==5)

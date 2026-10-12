@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'../web/index.html'),'utf8');
+const scope={};vm.createContext(scope);
+vm.runInContext(html.slice(html.indexOf('function imageReadFailure'),html.indexOf('function renderState')),scope);
+const errors=[{error:'Unsupported image mode: P.'}];
+const failed=scope.imageReadFailure({images_mesurees:0,images_en_erreur:1575},{measured:0,errors});
+assert.match(failed.label,/Analysis failed/);
+assert.match(failed.message,/Unsupported image mode: P/);
+assert.match(scope.imageReadFailure(null,{measured:0,errors}).label,/Analysis failed/);
+assert.equal(scope.imageReadFailure({images_mesurees:1575,images_en_erreur:0},{measured:1575,errors:[]}),null);
+assert.equal(scope.imageReadFailure({images_mesurees:1574,images_en_erreur:1},{errors}),null);
+assert.equal(scope.imageReadFailure(null,null),null);
+console.log('Unreadable jobs show a failure and its cause; valid, partial, and empty jobs remain distinct.');

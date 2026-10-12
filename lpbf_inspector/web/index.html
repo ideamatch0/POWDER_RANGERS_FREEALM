@@ -98,6 +98,12 @@ function renderAnalysisSummary(){const c=state.calibration,m=state.analysis;$('g
  $('gallery-protocol').textContent=m?m.measured+' measured photos · '+m.warmup_images+' initialization · '+m.gaps+' sequence gap(s). Job-specific counts before the persistence filter.':'Gray level calibrated. Run analysis to review the job.';
  $('gallery-evaluation-download').hidden=!m;$('gallery-evaluation-download').href='/api/analysis-summary?'+new URLSearchParams({run:state.run});
 }
+function imageReadFailure(summary,analysis){
+ const measured=summary?.images_mesurees??analysis?.measured;
+ const errors=summary?.images_en_erreur??analysis?.errors?.length??0;
+ if(measured===0&&errors>0)return {label:'Analysis failed · 0 measured images · '+errors+' image error(s)',message:'No images could be measured. '+(analysis?.errors?.[0]?.error||'Check the image format and intensity scale.')};
+ return null;
+}
 function renderState(){const p=state.progress,s=state.summary;const active=state.running;const stopped=p.stage==='interrompu';
  const d=state.dataset,gallery=d.mode==='gallery';$('dataset-description').textContent=d.empty?'No job imported yet. Use Import folder to get started.':gallery?d.images+' photos · one job · independent temporal analysis':d.images+' photos · '+d.layers+' layers ('+d.first+'–'+d.last+') · '+d.layer_um+' µm';
  $('run').disabled=active||d.empty;$('run').textContent='Analyze this job';$('stop').disabled=!active;['region','tile','threshold','analysis-phase','acquisition-step','calibrate'].forEach(id=>$(id).disabled=active||d.empty);
@@ -113,7 +119,9 @@ function renderState(){const p=state.progress,s=state.summary;const active=state
  $('bar').value=pct;if(active&&!p.total)$('bar').removeAttribute('value');
  const eta=Number.isFinite(p.eta)?' · estimated remaining '+Math.max(1,Math.ceil(p.eta))+' s':'';
  $('progress-text').textContent=active?(['indexation','inventaire'].includes(p.stage)?(state.operation==='import'?'Folder import':'Indexing images')+' · '+p.done+' files scanned…':(p.stage==='gris'?'Job gray-level calibration: ':'Job analysis : ')+p.done+' / '+p.total+' images'+eta):stopped?'Processing stopped · existing measurements will be reused':gallery?(state.analysis?'Analysis available · '+state.analysis.evaluated+' evaluated photos out of '+d.images:state.calibration?'Gray level calibrated · ready to analyze '+d.images+' photos':'Ready to analyze '+d.images+' photos'):s?'Results available · '+s.images_mesurees+' measured images':'Ready to analyze '+d.images+' photos';
- if(state.error)message(state.error);
+ const readFailure=!active&&!stopped?imageReadFailure(s,state.analysis):null;
+ if(readFailure)$('progress-text').textContent=readFailure.label;
+ if(state.error)message(state.error);else if(readFailure)message(readFailure.message);
  if(s){const n=s.indications.retenue||0;const pending=s.indications.a_examiner||0;const warm=s.observations_import_couverture.initialisation||0;
  $('coverage').textContent=n+' retained · '+pending+' pending · '+warm+' initialization images · '+s.images_en_erreur+' image error(s) · '+s.series.map(series=>phaseName[series.phase]+' : '+series.images+' photos').join(' / ');}
  else $('coverage').textContent=state.analysis?state.analysis.evaluated+' evaluated photos · '+state.analysis.warmup_images+' initialization · '+state.analysis.errors.length+' error(s).':state.config.warmup+' consecutive images per series initialize the history.';

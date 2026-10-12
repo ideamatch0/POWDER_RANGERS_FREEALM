@@ -48,6 +48,7 @@ jobs:
           $test = Get-Content $result -Raw | ConvertFrom-Json
           if (-not $test.ok) { throw "The packaged application reported a failed start-up test." }
           if (-not $test.offline_startup_recovered) { throw "The packaged application did not recover from an unavailable saved image folder." }
+          if (-not $test.palette_png_supported) { throw "The packaged application could not analyze indexed PNG images." }
           if ($test.version -ne "${{ github.ref_name }}".TrimStart("v")) { throw "The packaged version does not match its release tag." }
 
       - name: Create release archive and checksum

@@ -12,8 +12,8 @@ from PIL import Image
 from inspector import Config, Detector, extract, pack, unpack
 from storage import atomic_json
 
-VERSION='single-job-2'
-MEASUREMENT_VERSION='single-job-1'
+VERSION='single-job-3'
+MEASUREMENT_VERSION='single-job-2'
 
 
 def write_json(path,value):
