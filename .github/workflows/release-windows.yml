@@ -24,7 +24,7 @@ jobs:
       - name: Install runtime and packaging dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r lpbf_inspector/requirements.txt pyinstaller
+          python -m pip install -r lpbf_inspector/requirements-aalto.txt pyinstaller
 
       - name: Run regression tests
         working-directory: lpbf_inspector

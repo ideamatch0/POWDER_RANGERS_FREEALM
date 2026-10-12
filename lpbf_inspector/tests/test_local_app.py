@@ -19,7 +19,7 @@ from libraries import inventory
 class LocalAppTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         self.source = self.root/'images'
         self.source.mkdir()
         config = Config(tile_px=16)
