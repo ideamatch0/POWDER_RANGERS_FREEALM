@@ -1,6 +1,6 @@
 # Powder Ranger — Every layer under watch.
 
-## Version 0.3.11 — English desktop edition
+## Version 0.3.12 — English desktop edition
 
 The application interface, single-job review and new report builder are in English.
 The Windows executable includes Python, NumPy, Pillow and the local web interface.

@@ -18,7 +18,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.11'
+APP_VERSION='0.3.12'
 
 
 def data_folder(override=None):
