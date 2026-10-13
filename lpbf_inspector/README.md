@@ -1,6 +1,11 @@
 # Powder Ranger — Every layer under watch.
 
-## Version 0.3.12 — English desktop edition
+## Version 0.3.15 — English desktop edition
+
+This version adds per-camera build-plate contours, reusable camera presets, background
+part-position preparation, reliable Keep/Dismiss navigation with filters, and an
+explanation of each score with cached-measurement trigger verification. The weighted
+review equation is unchanged; a high priority is not a measured material severity.
 
 The application interface, single-job review and new report builder are in English.
 The Windows executable includes Python, NumPy, Pillow and the local web interface.

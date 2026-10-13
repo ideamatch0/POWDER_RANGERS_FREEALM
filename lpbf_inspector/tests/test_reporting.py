@@ -33,7 +33,12 @@ class ReportTests(unittest.TestCase):
                 Image.fromarray(a).save(self.source/f'cam1_layer{layer}_{phase}.jpg',quality=100)
         analyze(self.source,self.root/'results_nist_16bit',config)
         self.app=Application(self.root,self.source)
-        events=self.app.events({'run':[self.app.key]})['items']
+        deadline=time.monotonic()+5
+        listing=self.app.events({'run':[self.app.key]})
+        while listing.get('pending') and time.monotonic()<deadline:
+            time.sleep(.01);listing=self.app.events({'run':[self.app.key]})
+        self.assertFalse(listing.get('pending'),listing)
+        events=listing['items']
         self.kept=next(e for e in events if e['phase']=='etalement')
         self.other=next(e for e in events if e['phase']=='fusion')
         self.decide(self.kept,'retenue','Retained observation <script>unsafe()</script>')

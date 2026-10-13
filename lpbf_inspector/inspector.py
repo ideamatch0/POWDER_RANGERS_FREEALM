@@ -22,6 +22,7 @@ import zlib
 
 import numpy as np
 from PIL import Image
+from buildplate import validate_outlines,plate_mask,plate_bounds
 
 VERSION = "0.2.1"
 PHASES = {"etalement", "fusion"}
@@ -44,6 +45,7 @@ class Config:
     drift_gray: float = 20.0
     drift_alpha: float = 0.2
     roi_by_camera: dict = field(default_factory=dict)
+    plate_by_camera: dict = field(default_factory=dict)
     intensity_white_level: float = 255.0
     analysis_phases: list = field(default_factory=lambda: ['etalement','fusion'])
 
@@ -54,6 +56,7 @@ class Config:
             raise ValueError('Stage aliases must map text names to stage identifiers.')
         if not isinstance(self.roi_by_camera,dict):
             raise ValueError('Camera regions must be a mapping.')
+        self.plate_by_camera=validate_outlines(self.plate_by_camera)
         if type(self.first_layer_z_mm) not in (int,float):
             raise ValueError('Origin height must be a finite number.')
         try:expression = re.compile(self.filename_regex, re.I)
@@ -242,26 +245,52 @@ def gray_pixels(image, config):
     raise ValueError(f"Unsupported image mode: {image.mode}.")
 
 
+def analysis_pixels(image,config,camera):
+    width,height=image.size
+    box=config.roi_by_camera.get(camera,[0,0,width,height])
+    if not (0<=box[0]<box[2]<=width and 0<=box[1]<box[3]<=height):
+        raise ValueError('The ROI is outside the image dimensions.')
+    mask=None
+    if config.plate_by_camera:
+        if camera not in config.plate_by_camera:raise ValueError('Define the build plate for camera '+camera+'.')
+        points=config.plate_by_camera[camera]
+        bounds=plate_bounds(width,height,points)
+        box=[max(box[0],bounds[0]),max(box[1],bounds[1]),min(box[2],bounds[2]),min(box[3],bounds[3])]
+        if box[0]>=box[2] or box[1]>=box[3]:raise ValueError('Build plate and analysis region do not overlap.')
+        mask=plate_mask(width,height,tuple(map(tuple,points)))[box[1]:box[3],box[0]:box[2]]
+        if not np.any(mask):raise ValueError('No image pixels fall inside the build plate.')
+    return gray_pixels(image.crop(tuple(box)),config),mask,box
+
+
 def extract(path, config, camera):
     with Image.open(path) as image:
         width, height = image.size
-        box = config.roi_by_camera.get(camera, [0, 0, width, height])
-        if not (0 <= box[0] < box[2] <= width and 0 <= box[1] < box[3] <= height):
-            raise ValueError("The ROI is outside the image dimensions.")
-        # Pas de sous-échantillonnage : les statistiques utilisent tous les pixels de la ROI.
-        pixels = gray_pixels(image.crop(tuple(box)), config)
+        pixels,mask,box=analysis_pixels(image,config,camera)
     h, w = pixels.shape
     b = config.tile_px
     rows, cols = math.ceil(h/b), math.ceil(w/b)
-    padded = np.pad(pixels, ((0, rows*b-h), (0, cols*b-w)), mode="edge")
-    blocks = padded.reshape(rows, b, cols, b)
-    mean = blocks.mean(axis=(1, 3), dtype=np.float32)
-    std = blocks.std(axis=(1, 3), dtype=np.float32)
-    high = blocks.max(axis=(1, 3)).astype(np.float32)
-    low = blocks.min(axis=(1, 3)).astype(np.float32)
-    light = float(pixels.mean(dtype=np.float64))
+    pad=((0,rows*b-h),(0,cols*b-w))
+    if mask is None:
+        blocks=np.pad(pixels,pad,mode='edge').reshape(rows,b,cols,b)
+        mean=blocks.mean(axis=(1,3),dtype=np.float32)
+        std=blocks.std(axis=(1,3),dtype=np.float32)
+        high=blocks.max(axis=(1,3)).astype(np.float32)
+        low=blocks.min(axis=(1,3)).astype(np.float32)
+        light=float(pixels.mean(dtype=np.float64))
+    else:
+        blocks=np.pad(pixels,pad).reshape(rows,b,cols,b)
+        valid=np.pad(mask,pad).reshape(rows,b,cols,b)
+        count=valid.sum(axis=(1,3));denominator=np.maximum(count,1)
+        mean=(np.where(valid,blocks,0).sum(axis=(1,3))/denominator).astype(np.float32)
+        variance=np.where(valid,(blocks-mean[:,None,:,None])**2,0).sum(axis=(1,3))/denominator
+        std=np.sqrt(variance).astype(np.float32)
+        high=np.where(valid,blocks,-np.inf).max(axis=(1,3))
+        low=np.where(valid,blocks,np.inf).min(axis=(1,3))
+        light=float(pixels[mask].mean(dtype=np.float64))
     features = np.stack((mean-light, std, high-light, low-light)).astype(np.float32)
+    if mask is not None:features[:,count==0]=0
     geometry = {"width": width, "height": height, "roi": list(box), "tile": b}
+    if mask is not None:geometry['plate_polygon']=config.plate_by_camera[camera]
     return features, light, geometry
 
 
@@ -284,10 +313,8 @@ def calibrate_index(db, config, progress=lambda **kw: None, stop=lambda: False):
                     level = frame['luminance']
                 else:
                     with Image.open(frame['path']) as photo:
-                        roi=config.roi_by_camera.get(camera,[0,0,photo.width,photo.height])
-                        if not (0<=roi[0]<roi[2]<=photo.width and 0<=roi[1]<roi[3]<=photo.height):
-                            raise ValueError('Invalid crop.')
-                        level=float(gray_pixels(photo.crop(tuple(roi)),config).mean(dtype=np.float64))
+                        pixels,mask,_=analysis_pixels(photo,config,camera)
+                        level=float((pixels[mask] if mask is not None else pixels).mean(dtype=np.float64))
                 lights.append(level); ids.append(frame['id']); positions.append(frame['layer'])
             except (OSError, ValueError, Image.DecompressionBombError):
                 pass  # L'analyse consignera l'image illisible dans sa couverture.
@@ -347,8 +374,9 @@ class Detector:
         self.base_light = None
         self.ewma = None
         self.ewma_light = None
+        self.trace = None
 
-    def process(self, layer, values, light, geometry):
+    def process(self, layer, values, light, geometry, collect_events=True):
         c = self.c
         discontinuity = self.previous_layer is not None and (
             layer != self.previous_layer + 1 or geometry != self.geometry)
@@ -356,6 +384,7 @@ class Detector:
             self.__init__(c, self.calibration)
         self.previous_layer, self.geometry = layer, geometry
         events = []
+        self.trace = None
         ready = len(self.history) >= c.warmup
         if ready:
             history = np.stack(self.history)
@@ -365,7 +394,7 @@ class Detector:
                               2*c.min_change_gray, 2*c.min_change_gray], np.float32)[:, None, None]
             threshold = np.maximum(c.sigma*mad, floor)
             score = np.max(np.abs(values-median)/threshold, axis=0)
-            for box, severity in components(score >= 1, score, geometry):
+            for box, severity in components(score >= 1 if collect_events else np.zeros_like(score,dtype=bool), score, geometry):
                 events.append(("changement_local", box, severity))
             if self.baseline is None:
                 # Référence interne de départ ; elle n'est pas déclarée saine.
@@ -378,10 +407,16 @@ class Detector:
             self.ewma = (1-a)*self.ewma + a*values[0]
             self.ewma_light = (1-a)*self.ewma_light + a*light
             drift = np.abs(self.ewma-self.baseline)/self.drift_threshold
-            for box, severity in components((drift >= 1) & (score < 1), drift, geometry):
+            for box, severity in components((drift >= 1) & (score < 1) if collect_events else np.zeros_like(drift,dtype=bool), drift, geometry):
                 events.append(("derive_locale", box, severity))
             jump = abs(light-float(np.median(self.lights)))/c.global_jump_gray
             global_drift = abs(self.ewma_light-self.base_light)/c.drift_gray
+            self.trace = {'local':(values,median,threshold),
+                          'drift':(self.ewma,self.baseline,self.drift_threshold),
+                          'light':(light,float(np.median(self.lights)),c.global_jump_gray),
+                          'light_drift':(self.ewma_light,self.base_light,c.drift_gray),
+                          'initial':(light,self.calibration['mean_gray'],c.drift_gray) if self.calibration else None,
+                          'history_count':len(self.history)}
             if jump >= 1:
                 events.append(("luminosite_globale", geometry['roi'], jump))
             elif global_drift >= 1:

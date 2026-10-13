@@ -21,13 +21,17 @@ import job_analysis
 from job_views import AcquisitionViews
 from persistence import minimum_count
 from priority import with_priority, priority_text, PRIORITY_HELP, review_sort, DEFAULT_WEIGHTS, validate_weights
-from shape_reconstruction import shape_preview, part_overlap, MAX_EDGE as SHAPE_EDGE
+from shape_reconstruction import shape_preview, part_overlap, MAX_EDGE as SHAPE_EDGE, SHAPE_VERSION
 from reporting import ReportTasks, collect_report, create_report
 from http_api import make_handler
 from previews import preview
 from storage import atomic_json
 from source_integrity import verify_source
 from copy import deepcopy
+from buildplate import validate_outlines
+from inspector import jpeg_paths
+from detection_evidence import explain_event,explain_trace
+from inspector import Detector,unpack
 
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT / 'datasets' / 'nist_sample'
@@ -54,6 +58,8 @@ class Application(ReportTasks,AcquisitionViews):
         self.error = None
         self.operation='analysis'
         self.revision=0
+        self.part_positions={}
+        self.part_work={}
         self.project = self.root / 'results_nist_16bit'
         settings = self.root/'web_settings.json'
         saved=json.loads(settings.read_text(encoding='utf-8')) if settings.is_file() else {}
@@ -117,12 +123,63 @@ class Application(ReportTasks,AcquisitionViews):
         return {**info,**{k:self.library.get(k) for k in ('id','name','mode','note','source_url','license')},
                 'has_roi':bool(self.library.get('default_roi')),'source':str(self.source),'empty':bool(self.library.get('empty'))}
 
+    def plate_cameras(self):
+        return ['aalto'] if self.library['mode']=='gallery' else self.dataset.get('cameras',[])
+
+    def plate_outlines(self):
+        return deepcopy(self.preferences.get(self.library['id'],{}).get('plate_by_camera',self.library['config'].get('plate_by_camera',{})))
+
+    def plate_reference(self,camera=None,phase=None,image=False):
+        with self.lock:
+            cameras=self.plate_cameras()
+            camera=camera or (cameras[0] if cameras else None)
+            if camera not in cameras:raise ValueError('Choose an available camera.')
+            if self.library['mode']=='gallery':
+                path=job_analysis.source_path(self.source,self.gallery[0]);stage='acquisition'
+            else:
+                regex=re.compile(self.config.filename_regex,re.I)
+                aliases={k.casefold():v for k,v in self.config.phase_aliases.items()}
+                path=None
+                for candidate in jpeg_paths(self.source):
+                    match=regex.fullmatch(candidate.relative_to(self.source).as_posix())
+                    if match and match['camera'].casefold()==camera:
+                        stage=aliases.get(match['phase'].casefold())
+                        if stage and (not phase or stage==phase):path=candidate;break
+                if path is None:raise ValueError('No image is available for this camera and stage.')
+            if image:return preview(path,self.config.intensity_white_level,edge=1600)
+            with Image.open(path) as photo:width,height=photo.size
+            return {'library':self.library['id'],'cameras':cameras,'camera':camera,'phase':stage,
+                    'width':width,'height':height,'name':path.name,'outlines':self.plate_outlines()}
+
+    def set_buildplate(self,data):
+        with self.lock:
+            self.require_run(data.get('run',''),writable=True)
+            outlines=validate_outlines(data.get('outlines'))
+            cameras=self.plate_cameras()
+            if set(outlines)-set(cameras):raise ValueError('This outline contains an unknown camera.')
+            previous=deepcopy(self.preferences)
+            old_config=self.config;old_project=self.project;old_results=self.aalto_result;old_cal=self.gray_calibration
+            try:
+                self.save_preferences()
+                settings=self.preferences[self.library['id']]
+                settings['plate_by_camera']=outlines
+                settings['region']='plate' if cameras and all(c in outlines for c in cameras) else 'full'
+                self.config=self.make_config(settings)
+                self.project=self.project_for(self.config);self.load_job_results()
+                self.save_preferences();self.revision+=1
+                return self.state()
+            except Exception:
+                self.preferences=previous;self.config=old_config;self.project=old_project
+                self.aalto_result=old_results;self.gray_calibration=old_cal
+                raise
+
     def render_preview(self,path,white,crop=None,edge=1400):
         return preview(path,white,crop,edge)
 
     def save_preferences(self):
         self.preferences[self.library['id']]={'threshold':self.config.min_change_gray,'tile':self.config.tile_px,
-                      'region':'parts' if self.config.roi_by_camera else 'full',
+                      'region':'plate' if self.config.plate_by_camera else 'parts' if self.config.roi_by_camera else 'full',
+                      'plate_by_camera':self.plate_outlines(),
                       'analysis_phase':self.config.analysis_phases[0] if len(self.config.analysis_phases)==1 else 'both',
                       'acquisition_step':self.acquisition_step,'min_consecutive':self.min_consecutive,
                       'score_weights':self.score_weights}
@@ -178,6 +235,7 @@ class Application(ReportTasks,AcquisitionViews):
 
     def project_for(self, config):
         signature={'dataset':self.dataset['fingerprint'],'config':asdict(config)}
+        if not config.plate_by_camera:signature['config'].pop('plate_by_camera')
         if self.library['mode']=='gallery':signature.update(engine=job_analysis.VERSION,step=self.acquisition_step)
         else:signature['engine']=ENGINE_VERSION
         digest=hashlib.sha256(json.dumps(signature,sort_keys=True).encode()).hexdigest()[:16]
@@ -189,13 +247,17 @@ class Application(ReportTasks,AcquisitionViews):
         tile=int(data.get('tile',base.get('tile_px',32)))
         region=data.get('region','parts' if self.library['mode']=='gallery' and self.library.get('default_roi') else 'full')
         phase=data.get('analysis_phase','both')
-        if not np.isfinite(threshold) or not 6 <= threshold <= 40 or tile not in {16,32,64} or region not in {'full','parts'} or phase not in {'both','etalement','fusion'}:
+        if not np.isfinite(threshold) or not 6 <= threshold <= 40 or tile not in {16,32,64} or region not in {'full','parts','plate'} or phase not in {'both','etalement','fusion'}:
             raise ValueError('Settings are outside the supported limits.')
         config=Config(**base)
         config.min_change_gray=threshold
         config.min_texture_change=threshold*(2/3)
         config.tile_px=tile
         config.roi_by_camera=self.library.get('default_roi',{}) if region=='parts' else {}
+        config.plate_by_camera=self.plate_outlines() if region=='plate' else {}
+        if region=='plate' and not config.plate_by_camera:raise ValueError('Define the build plate first.')
+        known=['aalto'] if self.library['mode']=='gallery' else getattr(self,'dataset',{}).get('cameras',self.library.get('summary',{}).get('cameras',[]))
+        if region=='plate' and set(known)-set(config.plate_by_camera):raise ValueError('Define the build plate for every camera before analyzing.')
         config.analysis_phases=['etalement','fusion'] if phase=='both' else [phase]
         return config.validate()
 
@@ -241,6 +303,8 @@ class Application(ReportTasks,AcquisitionViews):
                         'run': self.key, 'summary': report, 'config': asdict(self.config),
                         'dataset':dict(self.dataset),'libraries':self.catalog.list(),
                         'revision':self.revision,'operation':self.operation,
+                        'priority_work':dict(self.part_work.get(self.key,{})),
+                        'buildplate':{'outlines':self.plate_outlines(),'cameras':self.plate_cameras()},
                         'review_settings':{'min_consecutive':self.min_consecutive,'score_weights':self.score_weights,'default_score_weights':DEFAULT_WEIGHTS},
                         'acquisition_step':self.acquisition_step,'calibration':metadata(db,'gray_calibration') if db else self.gray_calibration,
                         'display_phases':self.acquisition_phases() if self.library['mode']=='gallery' else self.config.analysis_phases,
@@ -371,7 +435,16 @@ class Application(ReportTasks,AcquisitionViews):
                 total = db.execute('SELECT COUNT(*) FROM events'+where, parameters).fetchone()[0]
                 after=query.get('after',[None])[0];next_id=None
                 if part_only or order=='priority':
-                    rows = [self.with_part_position(db, row) for row in db.execute('SELECT * FROM events'+where+' ORDER BY start_layer,id', parameters)]
+                    raw_rows=list(db.execute('SELECT * FROM events'+where+' ORDER BY start_layer,id', parameters))
+                    self.load_part_positions()
+                    missing=[row for row in raw_rows if self.part_cache_key(row) not in self.part_positions]
+                    has_fusion=db.execute("SELECT 1 FROM frames WHERE phase='fusion' AND features IS NOT NULL AND error IS NULL LIMIT 1").fetchone()
+                    if len(raw_rows)>25 and missing and has_fusion:
+                        self.queue_part_positions(missing)
+                        return {'items':[],'total':total,'pending':True,'done':len(raw_rows)-len(missing),
+                                'work_total':len(raw_rows),'offset':offset,'sort':order,'before_persistence':before,
+                                'min_consecutive':self.min_consecutive}
+                    rows = [self.with_part_position(db, row) for row in raw_rows]
                     if order=='priority':
                         priority_key=lambda row:(-row['priority_score'],row['start_layer'],row['id'])
                         rows.sort(key=priority_key)
@@ -387,7 +460,8 @@ class Application(ReportTasks,AcquisitionViews):
                             key=priority_key(anchor)
                             index=next((i for i,row in enumerate(rows) if priority_key(row)>key),len(rows))
                         else:
-                            index=next((i+1 for i,row in enumerate(rows) if str(row['id'])==str(after)),0)
+                            key=(anchor['start_layer'],anchor['id'])
+                            index=next((i for i,row in enumerate(rows) if (row['start_layer'],row['id'])>key),len(rows))
                         next_id=rows[index]['id'] if index<len(rows) else None
                         offset=(index//25)*25
                     offset=min(offset,((total-1)//25)*25 if total else 0)
@@ -404,7 +478,14 @@ class Application(ReportTasks,AcquisitionViews):
                         index=db.execute('SELECT COUNT(*) FROM events'+where+f' AND ({columns})<=({placeholders})',[*parameters,*values]).fetchone()[0]
                         offset=(index//25)*25
                     offset=min(offset,((total-1)//25)*25 if total else 0)
-                    rows = db.execute('SELECT * FROM events'+where+f' ORDER BY {columns} LIMIT 25 OFFSET ?', [*parameters,offset])
+                    rows = list(db.execute('SELECT * FROM events'+where+f' ORDER BY {columns} LIMIT 25 OFFSET ?', [*parameters,offset]))
+                    self.load_part_positions()
+                    missing=[row for row in rows if self.part_cache_key(row) not in self.part_positions]
+                    if missing and db.execute("SELECT 1 FROM frames WHERE phase='fusion' AND features IS NOT NULL AND error IS NULL LIMIT 1").fetchone():
+                        self.queue_part_positions(missing)
+                        return {'items':[],'total':total,'pending':True,'done':len(rows)-len(missing),
+                                'work_total':len(rows),'offset':offset,'sort':order,'before_persistence':before,
+                                'min_consecutive':self.min_consecutive}
                     items = [self.with_part_position(db, row) for row in rows]
                 result={'items':items, 'total':total, 'offset':offset,'sort':order,'before_persistence':before,'min_consecutive':self.min_consecutive}
                 result['before_part_filter']=before_part
@@ -413,7 +494,51 @@ class Application(ReportTasks,AcquisitionViews):
             finally:
                 db.close()
 
-    def with_part_position(self, db, row):
+    def part_cache_key(self,row,project=None):
+        return ((project or self.key),str(row['peak_frame'])+':'+str(row['box']))
+
+    def load_part_positions(self):
+        if self.key in self.part_work:return
+        self.part_work[self.key]={'running':False,'done':0,'total':0}
+        path=self.project/'part_positions.json'
+        if path.is_file():
+            try:
+                saved=json.loads(path.read_text(encoding='utf-8'))
+                if saved.get('version')==SHAPE_VERSION:
+                    self.part_positions.update({(self.key,k):v for k,v in saved['positions'].items()})
+            except (OSError,ValueError,KeyError,TypeError):pass
+
+    def queue_part_positions(self,rows):
+        key=self.key
+        if self.part_work[key].get('running'):return
+        if self.part_work[key].get('error'):
+            raise ValueError('Could not prepare part positions: '+self.part_work[key]['error'])
+        project=self.project;source=self.source.resolve();white=self.config.intensity_white_level
+        rows=sorted((dict(row) for row in rows),key=lambda row:row['peak_frame'])
+        self.part_work[key]={'running':True,'done':0,'total':len(rows)}
+        def worker():
+            db=None
+            try:
+                db=sqlite3.connect(project/'project.sqlite',timeout=20);db.row_factory=sqlite3.Row
+                for index,row in enumerate(rows):
+                    with self.lock:
+                        if self.key!=key:break
+                    position=self.compute_part_position(db,row,source,white)
+                    with self.lock:
+                        self.part_positions[self.part_cache_key(row,key)]=position
+                        self.part_work[key]['done']=index+1
+                with self.lock:
+                    positions={k[1]:v for k,v in self.part_positions.items() if k[0]==key}
+                atomic_json(project/'part_positions.json',{'version':SHAPE_VERSION,'positions':positions})
+            except Exception as error:
+                with self.lock:self.part_work[key]['error']=str(error)
+            finally:
+                if db:db.close()
+                with self.lock:self.part_work[key]['running']=False
+        threading.Thread(target=worker,daemon=True).start()
+
+    @staticmethod
+    def compute_part_position(db,row,source,white):
         base = dict(row)
         base['part_overlap'] = None
         base['on_part'] = None
@@ -423,14 +548,21 @@ class Application(ReportTasks,AcquisitionViews):
                                 (row['camera'], peak['layer'] if peak else row['end_layer'])).fetchone()
             if fusion:
                 path = Path(fusion['path']).resolve()
-                if self.source.resolve() in path.parents:
+                if source in path.parents:
                     verify_source(path,(fusion['size'],fusion['mtime']))
-                    overlap = part_overlap(path,self.config.intensity_white_level,json.loads(row['box']))
+                    overlap = part_overlap(path,white,json.loads(row['box']))
                     base['part_overlap'] = overlap
                     base['on_part'] = overlap >= .05
         except Exception:
             base['part_overlap'] = None
             base['on_part'] = None
+        return {'part_overlap':base['part_overlap'],'on_part':base['on_part']}
+
+    def with_part_position(self,db,row):
+        key=self.part_cache_key(row)
+        if key not in self.part_positions:
+            self.part_positions[key]=self.compute_part_position(db,row,self.source.resolve(),self.config.intensity_white_level)
+        base={**dict(row),**self.part_positions[key]}
         event = with_priority(base,self.score_weights)
         event.update(consecutive_count=row['end_layer']-row['start_layer']+1,on_part=base['on_part'])
         return event
@@ -474,6 +606,53 @@ class Application(ReportTasks,AcquisitionViews):
                         'crop':crop,'context':context,'geometry':geometry}
             finally:
                 db.close()
+
+    def evidence(self,key,event_id):
+        with self.lock:
+            self.require_run(key)
+            config=deepcopy(self.config);source=self.source;project=self.project
+            cache=getattr(self,'_evidence_cache',{})
+            self._evidence_cache=cache
+            if self.library['mode']=='gallery':
+                _,lookup=self.acquisition_events();event=lookup.get(str(event_id))
+                if event is None:raise ValueError('Indication not found.')
+                event=dict(event);peak=event['start_layer'];step=self.acquisition_step
+                channel=peak%step;cal={**self.gray_calibration['channels'][str(channel)]}
+                cal['last_position']=cal['last_counter']//step
+                records=[dict(r) for r in self.gallery if r['counter']%step==channel and r['counter']<=peak
+                         and (event['kind']!='changement_local' or r['counter']>=peak-config.history*step)]
+                folder=self.job_folder();db=None
+                stamp=(key,event['snapshot'])
+            else:
+                db=self.database()
+                if not db:raise ValueError('Analysis unavailable.')
+                row=db.execute('SELECT * FROM events WHERE id=?',(event_id,)).fetchone()
+                if not row:db.close();raise ValueError('Indication not found.')
+                event=dict(row);stamp=(key,event_fingerprint(row))
+            if stamp in cache:
+                if db:db.close()
+                return cache[stamp]
+        # Replaying cached statistics must not hold the application mutex or
+        # decode thousands of photographs while the operator reviews a job.
+        try:
+            if db:result=explain_event(db,event,config)
+            else:
+                detector=Detector(config,cal)
+                with sqlite3.connect(folder/'measurements.sqlite') as measurements:
+                    geometry=None
+                    for record in sorted(records,key=lambda r:r['counter']):
+                        path=job_analysis.source_path(source,record)
+                        stored=measurements.execute('SELECT values_blob,level,geometry FROM features WHERE signature=?',
+                                                    (job_analysis.measurement_signature(path,config),)).fetchone()
+                        if not stored:detector=Detector(config,cal);continue
+                        geometry=json.loads(stored[2]);detector.process(record['counter']//step,unpack(stored[0]),stored[1],geometry,collect_events=False)
+                result=explain_trace(detector,event,geometry) if geometry else {'available':False,'reason':'Cached measurements unavailable.'}
+            with self.lock:
+                if len(cache)>256:cache.clear()
+                cache[stamp]=result
+            return result
+        finally:
+            if db:db.close()
 
     def decide(self, data):
         with self.lock:

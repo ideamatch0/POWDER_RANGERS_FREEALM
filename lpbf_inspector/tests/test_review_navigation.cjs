@@ -3,12 +3,13 @@ const html=fs.readFileSync(path.join(__dirname,'../web/index.html'),'utf8');
 const source=html.slice(html.indexOf('async function decide('),html.indexOf('async function applyPersistence('));
 function scenario(next_id){
  const nodes={};const calls=[];const current={event:{id:'125:0',snapshot:'snap',status:'a_examiner',comment:''}};
- const scope={state:{run:'job-A'},selected:current,savingDecision:false,reviewFinished:false,requestSerial:0,statusName:{retenue:'Retenue',ecartee:'Écartée',a_examiner:'À examiner'},
+ const scope={state:{run:'job-A'},selected:current,savingDecision:false,reviewFinished:false,requestSerial:0,pendingAdvance:null,statusName:{retenue:'Retenue',ecartee:'Écartée',a_examiner:'À examiner'},
   $:id=>nodes[id]||(nodes[id]={value:'Mon observation',textContent:'',querySelector(){return this}}),
   message:error=>{if(error)calls.push(['error',String(error)])},renderState(){},
   api:async(route,body)=>{calls.push(['saved',body]);return {saved:true}},
   loadList:async options=>{calls.push(['list',options]);return {next_id}},
   choose:async id=>{calls.push(['choose',id]);scope.selected={event:{id}}},refreshState:async()=>{}};
+ scope.finishReview=()=>{scope.selected=null;scope.reviewFinished=true;nodes.empty=scope.$('empty');nodes.empty.textContent='End of list · decision saved';};
  vm.createContext(scope);vm.runInContext(source,scope);return {scope,calls,current,nodes};
 }
 (async()=>{
@@ -19,6 +20,7 @@ function scenario(next_id){
   assert.equal(calls[2][1],'126:0');assert.equal(scope.savingDecision,false);
  }
  const pending=scenario('126:0');await pending.scope.decide('a_examiner');assert.equal(pending.scope.selected,pending.current);assert.ok(!pending.calls.some(c=>c[0]==='choose'));
+ const preparing=scenario(null);preparing.scope.loadList=async()=>({pending:true});await preparing.scope.decide('retenue');assert.equal(preparing.scope.selected,preparing.current);assert.equal(preparing.scope.reviewFinished,false);assert.equal(preparing.scope.pendingAdvance.id,'125:0');assert.equal(preparing.scope.savingDecision,false);
  const end=scenario(null);await end.scope.decide('retenue');assert.equal(end.scope.selected,null);assert.equal(end.scope.reviewFinished,true);assert.match(end.nodes.empty.textContent,/End of list/);
  const failed=scenario('126:0');failed.scope.api=async()=>{throw Error('Enregistrement refusé')};await failed.scope.decide('ecartee');assert.equal(failed.scope.selected,failed.current);assert.equal(failed.current.event.status,'a_examiner');assert.ok(!failed.calls.some(c=>c[0]==='choose'));
  const doubled=scenario('126:0');let finish;doubled.scope.api=async(_,body)=>{doubled.calls.push(['saved',body]);await new Promise(resolve=>finish=resolve)};

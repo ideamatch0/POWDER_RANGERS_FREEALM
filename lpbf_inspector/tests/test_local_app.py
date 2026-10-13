@@ -5,6 +5,8 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+import threading
+from unittest.mock import patch
 
 import numpy as np
 from PIL import Image
@@ -60,6 +62,23 @@ class LocalAppTests(unittest.TestCase):
         self.assertIn('Close-ups: matching crop',report)
         self.assertIn('Overview',report)
         self.assertEqual(self.app.state()['summary']['indications']['retenue'],1)
+
+    def test_cached_measurements_reproduce_detail_trigger(self):
+        key=self.app.key;event=self.app.events({'run':[key]})['items'][0]
+        evidence=self.app.evidence(key,event['id'])
+        self.assertTrue(evidence['available']);self.assertTrue(evidence['ratio_verified'])
+        self.assertAlmostEqual(evidence['delta']/evidence['threshold'],event['score'],places=4)
+        self.assertEqual(self.app.evidence(key,event['id']),evidence)
+        with self.assertRaises(ValueError):self.app.evidence('obsolete',event['id'])
+
+    def test_part_filter_next_after_removed_anchor_does_not_restart(self):
+        self.replace_events([1]*3);key=self.app.key
+        with patch.object(self.app,'compute_part_position',return_value={'part_overlap':1,'on_part':True}):
+            q={'run':[key],'part':['1'],'status':['a_examiner']}
+            items=self.app.events(q)['items'];current=items[1];detail=self.app.detail(key,current['id'])
+            self.app.decide({'run':key,'id':current['id'],'snapshot':detail['event']['snapshot'],'status':'retenue'})
+            page=self.app.events(dict(q,after=[str(current['id'])]))
+            self.assertEqual(page['next_id'],items[2]['id'])
 
     def test_stale_tab_cannot_change_another_analysis(self):
         with self.assertRaisesRegex(ValueError,'changed'):
@@ -117,6 +136,40 @@ class LocalAppTests(unittest.TestCase):
         next_page=self.app.events(dict(q,after=[str(anchor['id'])]))
         self.assertEqual(next_page['items'][24]['id'],next_page['next_id'])
         self.assertEqual(next_page['next_id'],ids[25])
+
+    def test_priority_preparation_does_not_hold_application_lock(self):
+        self.replace_events([1]*30);key=self.app.key
+        db=self.app.database()
+        with db:
+            # Presence of measured fusion frames enables the photographic score factor.
+            db.execute("UPDATE frames SET phase='fusion'")
+        db.close()
+        started=threading.Event();release=threading.Event()
+        def slow_position(*args):
+            started.set();release.wait(5)
+            return {'part_overlap':.5,'on_part':True}
+        try:
+            with patch.object(self.app,'compute_part_position',side_effect=slow_position):
+                pending=self.app.events({'run':[key],'sort':['priority']})
+                self.assertTrue(pending['pending']);self.assertTrue(started.wait(2))
+                # A UI state request remains available while reconstruction is stalled.
+                self.assertEqual(self.app.state()['run'],key)
+                self.assertTrue(self.app.lock.acquire(timeout=.2))
+                self.app.lock.release()
+                release.set()
+                deadline=time.monotonic()+5
+                while self.app.part_work[key]['running'] and time.monotonic()<deadline:time.sleep(.01)
+                self.assertFalse(self.app.part_work[key]['running'])
+                ready=self.app.events({'run':[key],'sort':['priority']})
+                self.assertNotIn('pending',ready);self.assertEqual(ready['total'],30)
+                self.assertEqual(len(ready['items']),25)
+                self.assertTrue((self.app.project/'part_positions.json').is_file())
+                restored=Application(self.root,self.source)
+                restored.project=self.app.project
+                restored.load_part_positions()
+                with patch.object(restored,'compute_part_position',side_effect=AssertionError('Cache ignored')):
+                    self.assertEqual(restored.events({'run':[restored.key],'sort':['priority']})['total'],30)
+        finally:release.set()
         with self.assertRaises(ValueError):self.app.events({'run':[key],'sort':['score; DROP TABLE events']})
 
     def test_shape_requires_measured_fusion_and_preserves_analysis(self):

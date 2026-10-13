@@ -33,15 +33,26 @@ def check_records(records):
 
 
 def calibration_signature(fingerprint,config,step):
-    return signature([MEASUREMENT_VERSION,fingerprint,config.roi_by_camera,step,config.intensity_white_level])
+    values=[MEASUREMENT_VERSION,fingerprint,config.roi_by_camera,step,config.intensity_white_level]
+    if config.plate_by_camera:values.append(config.plate_by_camera)
+    return signature(values)
 
 
 def analysis_signature(fingerprint,config,step):
-    return signature([VERSION,calibration_signature(fingerprint,config,step),asdict(config),step])
+    values=asdict(config)
+    if not config.plate_by_camera:values.pop('plate_by_camera')
+    return signature([VERSION,calibration_signature(fingerprint,config,step),values,step])
 
 
 def measure(path,config):
     return extract(path, config, 'aalto')
+
+
+def measurement_signature(path,config):
+    stat=path.stat()
+    values=[MEASUREMENT_VERSION,str(path),stat.st_size,stat.st_mtime_ns,config.tile_px,config.roi_by_camera,config.intensity_white_level]
+    if config.plate_by_camera:values.append(config.plate_by_camera)
+    return signature(values)
 
 
 def source_path(source,record):
@@ -97,8 +108,8 @@ def analyze_job(source,records,config,step,fingerprint,calibration,folder,progre
             detector=detectors[channel]
             predictions=[];ready=False;level=None;geometry=None;gap=False
             try:
-                path=source_path(source,record);stat=path.stat()
-                stamp=signature([MEASUREMENT_VERSION,str(path),stat.st_size,stat.st_mtime_ns,config.tile_px,config.roi_by_camera,config.intensity_white_level])
+                path=source_path(source,record)
+                stamp=measurement_signature(path,config)
                 stored=db.execute('SELECT values_blob,level,geometry FROM features WHERE signature=?',(stamp,)).fetchone()
                 if stored:
                     values,level,geometry=unpack(stored[0]),stored[1],json.loads(stored[2]);cached+=1

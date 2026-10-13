@@ -20,6 +20,7 @@ main{padding:22px;max-width:1740px;margin:auto}.setup{background:white;border:1p
 </style>
 <link rel="stylesheet" href="/dark.css">
 <link rel="stylesheet" href="/reports.css">
+<link rel="stylesheet" href="/buildplate.css">
 </head>
 <body>
 <header><div class="brand"><a href="/" aria-label="Powder Ranger home"><img src="/powder-ranger-icon.svg" width="54" height="54" alt=""></a><div><h1>Powder <span>Ranger</span></h1><p>Every layer under watch.</p></div></div><span class="local">LPBF inspection · local processing</span></header>
@@ -32,11 +33,16 @@ main{padding:22px;max-width:1740px;margin:auto}.setup{background:white;border:1p
 <div class="dataset"><span class="eyebrow">Available data</span><p id="dataset-description">Loading image series…</p></div>
 <div class="field" id="phase-field"><label for="analysis-phase">Process stage</label><select id="analysis-phase"><option value="both">Both, analyzed separately</option><option value="etalement">After spreading only</option><option value="fusion">After melting only</option></select></div>
 <div class="field" id="acquisition-field" hidden><label for="acquisition-step">Compare acquisitions</label><select id="acquisition-step"><option value="1">Consecutive · N against N−1</option><option value="2">Alternating · N against N−2</option></select></div>
-<div class="field"><label for="region">Analysis region</label><select id="region"><option value="full">Full image</option><option value="parts">Around the four parts</option></select></div>
+<div class="field"><label for="region">Analysis region</label><select id="region"><option value="full">Full image</option><option value="plate">Inside build plate</option><option value="parts">Preset region</option></select><button id="define-buildplate" type="button">Define build plate…</button></div>
 <div class="field"><label for="threshold">Change threshold</label><input id="threshold" type="range" min="6" max="40" value="12" step="1"><output id="threshold-label">12 / 255 · lower = more sensitive</output></div>
 <div class="field"><label for="tile">Tile size</label><select id="tile"><option value="16">16 × 16 pixels</option><option selected value="32">32 × 32 pixels</option><option value="64">64 × 64 pixels</option></select></div>
 <div class="actions"><button id="calibrate">Calibrate gray level</button><button id="run" class="primary">Analyze this job</button><button id="stop" disabled>Stop</button></div>
 </section>
+<dialog id="plate-dialog"><div class="plate-heading"><h2>Define the build plate</h2><button id="plate-close" type="button" aria-label="Close build plate editor">Close</button></div>
+<p>Click the corners in order around the plate. For a round or irregular plate, add more points around its edge. Drag a point to adjust it. The dark area is excluded from calibration and detection.</p>
+<div class="plate-toolbar"><label>Camera <select id="plate-camera"></select></label><label>Reference stage <select id="plate-phase"><option value="">First available image</option><option value="etalement">After spreading</option><option value="fusion">After melting</option></select></label><button id="plate-undo" type="button">Undo point</button><button id="plate-clear" type="button">Clear this camera</button><button id="plate-export" type="button">Export camera preset</button><label class="plate-upload">Import camera preset<input id="plate-import" type="file" accept=".json,application/json"></label></div>
+<div id="plate-image-wrap"><svg id="plate-canvas" role="img" aria-label="Camera image. Click to define the build plate outline." tabindex="0"></svg></div>
+<p id="plate-description"></p><p id="plate-feedback" role="status" aria-live="polite"></p><div class="plate-footer"><span>One outline per camera, shared by both process stages. Recheck presets after a camera move or a framing change.</span><button id="plate-save" class="primary" type="button">Save outline and use it</button></div></dialog>
 <p id="calibration-note" class="note calibration-note"></p>
 <div class="progress" role="status" aria-live="polite"><progress id="bar" max="100" value="100"></progress><span id="progress-text">Loading project…</span><span id="message"></span></div>
 <section id="gallery-evaluation" class="panel evaluation" hidden aria-label="Job analysis overview">
@@ -51,7 +57,7 @@ main{padding:22px;max-width:1740px;margin:auto}.setup{background:white;border:1p
 <div class="review-order"><label for="review-sort">Review order</label><select id="review-sort"><option value="layer">Layer / acquisition order</option><option value="priority">Highest priority first</option></select><small>Keep / Dismiss advances in this order.</small></div><div id="list" class="list"></div><div class="pager"><button id="previous">← Previous</button><span id="page">—</span><button id="next">Next →</button></div></aside>
 <section class="panel"><div id="empty" class="empty"><strong>Select an indication</strong>The flagged area will appear in matching close-ups before and after.</div>
 <div id="viewer" class="viewer" hidden><div class="meta"><div><h2 id="event-title"></h2><p id="event-meta"></p></div><label class="switch"><input id="overlay" type="checkbox" checked>Show boxes</label></div>
-<div class="priority-panel"><div><strong id="event-priority">—</strong><span>Priority score / 100</span></div><div class="priority-components"><span id="event-variation"></span><meter id="variation-meter" min="0" max="100"></meter><span id="event-persistence"></span><meter id="persistence-meter" min="0" max="100"></meter></div><details><summary>How is this score calculated?</summary><p>The score combines intensity, persistence, area, overlap with the extracted part and process stage. Default weights are 35%, 25%, 15%, 20% and 5% respectively. The previous intensity × persistence score is kept as the legacy value for traceability.</p><p>This score helps prioritize review. It depends on the job settings and photographic reconstruction, and does not represent defect probability or material severity.</p></details></div><div class="orientation"><figure class="overview"><div id="overview" class="photo"></div><figcaption>Overview · flagged layer</figcaption></figure><div class="orientation-copy"><h3>Locate the area on the powder bed</h3><p><span class="legend"></span>Red: flagged area</p><p><span class="legend context"></span>Dashed blue: crop used for the three views below</p><p id="location"></p></div></div>
+<div class="priority-panel"><div><strong id="event-priority">—</strong><span>Priority score / 100</span></div><div class="priority-components"><span id="event-variation"></span><meter id="variation-meter" min="0" max="100"></meter><span id="event-persistence"></span><meter id="persistence-meter" min="0" max="100"></meter></div><details><summary>How is this score calculated?</summary><p>Detection strength is a peak threshold ratio, not the visible mean brightness change. V = r / (r + 2); persistence P = n / (n + 3). Area uses the bounding box A / (A + 4096), in pixels², and may include unchanged cells. Unknown part overlap contributes 50 / 100. Stage is a review preference. A persistent, large indication can therefore have a high priority without strong visible contrast.</p><table class="score-table"><thead><tr><th>Factor</th><th>Value</th><th>Weight</th><th>Contribution</th></tr></thead><tbody id="score-factors"></tbody></table><p id="score-formula"></p><p id="score-evidence" role="status"></p><p>Dashed yellow marks the tile containing the peak trigger; cyan marks a saved build-plate contour. Comparisons against N−1 and N+1 can look similar for drift or a change relative to the rolling history. The score is unchanged; the previous intensity × persistence value remains available for traceability.</p><p>This score helps prioritize review. It depends on the job settings and photographic reconstruction, and does not represent defect probability or material severity.</p></details></div><div class="orientation"><figure class="overview"><div id="overview" class="photo"></div><figcaption>Overview · flagged layer</figcaption></figure><div class="orientation-copy"><h3>Locate the area on the powder bed</h3><p><span class="legend"></span>Red: flagged area</p><p><span class="legend context"></span>Dashed blue: crop used for the three views below</p><p id="location"></p></div></div>
 <div class="zoom-tools"><h3>Compare the same area</h3><label for="context">Surrounding context <select id="context"><option value="tight">Tight</option><option value="standard" selected>Standard</option><option value="wide">Large</option></select></label></div>
 <div class="image-grid" id="image-grid"></div><p class="zoom-note" id="zoom-note"></p><a class="pair-link" id="pair" target="_blank" rel="noopener">View this area at the other stage, same layer ↗</a>
 <div class="decision"><label for="comment">Your observation</label><textarea id="comment" placeholder="Describe what you observe in this area…"></textarea>
@@ -79,6 +85,8 @@ main{padding:22px;max-width:1740px;margin:auto}.setup{background:white;border:1p
 <script src="/stack.js"></script>
 <script src="/libraries.js"></script>
 <script src="/reports.js"></script>
+<script src="/buildplate.js"></script>
+<script src="/score-details.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 let state=null,selected=null,offset=0,total=0,wasRunning=false,requestSerial=0,polling=false,listSerial=0,savingDecision=false,savingFilter=false,reviewFinished=false;
@@ -89,7 +97,9 @@ function message(error){$('message').textContent=error instanceof Error?error.me
 async function api(path,body){const response=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await response.json();if(!response.ok)throw Error(data.error||'Processing error');return data}
 const stackViewer=createStackViewer({getState:()=>state,api,reportError:message,openIndication:id=>choose(id)});
 const libraryUI=createLibraryUI({getState:()=>state,api,refresh:()=>refreshState(),reportError:message});
+const plateUI=createBuildPlateUI({getState:()=>state,api,refresh:()=>refreshState(),reportError:message});
 function imageURL(id,cropped=false){const params=new URLSearchParams({run:state.run,id});if(cropped){params.set('event',selected.event.id);params.set('context',selected.context);}return '/api/image?'+params}
+const showScoreDetails=createScoreDetails({api,isCurrent:(detail,run)=>selected===detail&&state.run===run,onEvidence:()=>renderInspection()});
 const axisName=()=>state.dataset.mode==='gallery'?'Acquisition':'Layer';
 function renderAnalysisSummary(){const c=state.calibration,m=state.analysis;$('gallery-evaluation').hidden=!m&&!c;if(!m&&!c)return;
  const metrics=[['Initial gray level · / 255',Number.isFinite(c?.mean_gray)?c.mean_gray.toFixed(2):'—'],['Calibration photos',c?.sample_images??'—'],['Evaluated photos',m?.evaluated??'—'],['Flagged photos',m?.flagged_images??'—'],['Indications per image',m?.detections??'—'],['Image errors',m?m.errors.length:'—']];
@@ -127,13 +137,16 @@ function renderState(){const p=state.progress,s=state.summary;const active=state
  else $('coverage').textContent=state.analysis?state.analysis.evaluated+' evaluated photos · '+state.analysis.warmup_images+' initialization · '+state.analysis.errors.length+' error(s).':state.config.warmup+' consecutive images per series initialize the history.';
  document.querySelector('.raw-datasets').hidden=!state.libraries.some(l=>l.id.startsWith('nist')||l.id.startsWith('aalto_')||l.id==='ornl_cylinders');
  stackViewer.setState(state);
- renderAnalysisSummary();libraryUI.setState(state);
+ renderAnalysisSummary();libraryUI.setState(state);plateUI.setState(state);
 }
 async function refreshState(){if(polling)return;polling=true;try{const next=await api('/api/state');const initial=!state;const changed=initial||state.run!==next.run;const reviewChanged=initial||state.review_settings?.min_consecutive!==next.review_settings?.min_consecutive;const ended=wasRunning&&!next.running;state=next;wasRunning=next.running;
- if(initial||changed||ended||reviewChanged){$('min-consecutive').value=state.review_settings?.min_consecutive||1;const weights=state.review_settings?.score_weights||state.review_settings?.default_score_weights||{};for(const key of ['intensity','persistence','area','part','stage'])$('weight-'+key).value=Number(weights[key]??0).toFixed(2);$('threshold').value=state.config.min_change_gray;$('tile').value=state.config.tile_px;$('region').value=Object.keys(state.config.roi_by_camera).length?'parts':'full';$('analysis-phase').value=state.config.analysis_phases.length===1?state.config.analysis_phases[0]:'both';$('acquisition-step').value=state.acquisition_step||1;$('threshold').oninput();
+ if(initial||changed||ended||reviewChanged){$('min-consecutive').value=state.review_settings?.min_consecutive||1;const weights=state.review_settings?.score_weights||state.review_settings?.default_score_weights||{};for(const key of ['intensity','persistence','area','part','stage'])$('weight-'+key).value=Number(weights[key]??0).toFixed(2);$('threshold').value=state.config.min_change_gray;$('tile').value=state.config.tile_px;$('region').value=Object.keys(state.config.plate_by_camera||{}).length?'plate':Object.keys(state.config.roi_by_camera).length?'parts':'full';$('analysis-phase').value=state.config.analysis_phases.length===1?state.config.analysis_phases[0]:'both';$('acquisition-step').value=state.acquisition_step||1;$('threshold').oninput();
  const previousPhase=$('phase').value;const all=document.createElement('option');all.value='';all.textContent='All stages / sequences';$('phase').replaceChildren(all,...state.display_phases.map(phase=>{const o=document.createElement('option');o.value=phase;o.textContent=phaseName[phase];return o;}));$('phase').value=state.display_phases.includes(previousPhase)?previousPhase:'';}
- renderState();if(!state.running&&!reviewFinished)$('empty').querySelector('strong').textContent='Select an indication';if(changed||reviewChanged){requestSerial++;selected=null;offset=0;reviewFinished=false;$('viewer').hidden=true;$('empty').hidden=false;}if(changed||ended||reviewChanged)await loadList();}catch(e){message(e)}finally{polling=false}}
-async function loadList({after=null,autoSelect=true}={}){if(!state)return;const run=state.run,serial=++listSerial;const params=new URLSearchParams({run,offset,phase:$('phase').value,status:$('status').value,sort:$('review-sort').value});if($('part-only').checked)params.set('part','1');if(after!==null)params.set('after',after);const data=await api('/api/events?'+params);if(run!==state.run||serial!==listSerial)return;offset=data.offset||0;total=data.total;$('total').textContent=total;$('list').replaceChildren();
+ renderState();if(!state.running&&!reviewFinished)$('empty').querySelector('strong').textContent='Select an indication';if(changed||reviewChanged){requestSerial++;selected=null;offset=0;reviewFinished=false;$('viewer').hidden=true;$('empty').hidden=false;}if(changed||ended||reviewChanged||priorityPending)await loadList();}catch(e){message(e)}finally{polling=false}}
+let priorityPending=false,pendingAdvance=null;
+async function loadList({after=null,autoSelect=true}={}){if(!state)return;const run=state.run,serial=++listSerial;if(pendingAdvance?.run===run)after=pendingAdvance.id;const params=new URLSearchParams({run,offset,phase:$('phase').value,status:$('status').value,sort:$('review-sort').value});if($('part-only').checked)params.set('part','1');if(after!==null)params.set('after',after);const data=await api('/api/events?'+params);if(run!==state.run||serial!==listSerial)return;
+ if(data.pending){priorityPending=true;message('Preparing scores and part positions · '+data.done+' / '+data.work_total+' indications. You can keep reviewing or return to layer order.');$('page').textContent='Preparing scores…';return data;}
+ if(priorityPending)message('');priorityPending=false;offset=data.offset||0;total=data.total;$('total').textContent=total;$('list').replaceChildren();
  const hiddenByPart=Math.max(0,(data.before_part_filter??total)-total);
  $('persistence-summary').textContent=total+' visible(s) · '+Math.max(0,(data.before_persistence??total)-total)+' hidden by persistence'+(hiddenByPart?' · '+hiddenByPart+' outside extracted part':'')+' · minimum '+(state.review_settings?.min_consecutive||1);
  for(const event of data.items){const b=document.createElement('button');b.className='event'+(selected?.event.id===event.id?' selected':'');b.dataset.event=event.id;
@@ -143,9 +156,11 @@ async function loadList({after=null,autoSelect=true}={}){if(!state)return;const 
  const small=document.createElement('small');small.textContent=phaseName[event.phase]+' · '+kindName[event.kind]+' · '+(event.consecutive_count||1)+' '+(state.dataset.mode==='gallery'?'acquisition(s)':'layer(s)')+' consecutive'+(event.on_part===true?' · on extracted part':event.on_part===false?' · outside extracted part':'');b.append(small);b.onclick=()=>choose(event.id);$('list').append(b);}
  if(!data.items.length){const p=document.createElement('p');p.className='note';p.textContent=state.running?'Analysis is running.':'No indications match these settings or filters.';$('list').append(p);}
  $('page').textContent=total?offset+1+'–'+Math.min(offset+25,total)+' / '+total:'0';$('previous').disabled=offset===0;$('next').disabled=offset+25>=total;
- if(autoSelect&&!reviewFinished&&!selected&&data.items.length&&!state.running)await choose(data.items[0].id);
+ if(pendingAdvance?.run===run){const advance=pendingAdvance;pendingAdvance=null;if(selected===advance.current){if(data.next_id!==null&&data.next_id!==undefined)await choose(data.next_id);else finishReview();}}
+ else if(autoSelect&&!reviewFinished&&!selected&&data.items.length&&!state.running)await choose(data.items[0].id);
  return data;
 }
+function finishReview(){selected=null;reviewFinished=true;requestSerial++;$('viewer').hidden=true;$('empty').hidden=false;$('empty').querySelector('strong').textContent='End of list · decision saved';}
 function svgElement(tag,attrs){const element=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs))element.setAttribute(k,v);return element}
 function addRect(svg,box,color,dashed=false,width=2){svg.append(svgElement('rect',{x:box[0],y:box[1],width:box[2]-box[0],height:box[3]-box[1],fill:'none',stroke:color,'stroke-width':width,'stroke-dasharray':dashed?'5 4':'none','vector-effect':'non-scaling-stroke'}))}
 function fillPhoto(photo,frame,cropped,index){const detail=selected;const box=JSON.parse(detail.event.box);const bounds=cropped?detail.crop:[0,0,detail.geometry.width,detail.geometry.height];const w=bounds[2]-bounds[0],h=bounds[3]-bounds[1];photo.style.aspectRatio=w+'/'+h;
@@ -158,6 +173,8 @@ function fillPhoto(photo,frame,cropped,index){const detail=selected;const box=JS
  const cx=(box[0]+box[2])/2,cy=(box[1]+box[3])/2,gap=Math.max(box[2]-box[0],box[3]-box[1])/2+35,arm=75;
  svg.append(svgElement('path',{d:`M ${cx-gap-arm} ${cy} h ${arm} M ${cx+gap} ${cy} h ${arm} M ${cx} ${cy-gap-arm} v ${arm} M ${cx} ${cy+gap} v ${arm}`,stroke:'#ef3535','stroke-width':2,'vector-effect':'non-scaling-stroke'}));
  }else addRect(svg,box,index===1?'#ef3535':'#64a6c4',index!==1,index===1?2.5:1.5);
+ if(!cropped&&detail.geometry.plate_polygon)svg.append(svgElement('polygon',{points:detail.geometry.plate_polygon.map(p=>p[0]*detail.geometry.width+','+p[1]*detail.geometry.height).join(' '),fill:'none',stroke:'#44dfda','stroke-width':2,'vector-effect':'non-scaling-stroke'}));
+ if(detail.detection_evidence?.peak_tile&&index===1)addRect(svg,detail.detection_evidence.peak_tile,'#ffcf55',true,2);
  svg.style.display=$('overlay').checked?'':'none';photo.append(svg);
 }
 function renderInspection(){const detail=selected,e=detail.event;$('overview').replaceChildren();fillPhoto($('overview'),detail.frames[1],false,1);$('image-grid').replaceChildren();
@@ -166,20 +183,22 @@ function renderInspection(){const detail=selected,e=detail.event;$('overview').r
  $('zoom-note').textContent='Matching crop: '+(crop[2]-crop[0])+' × '+(crop[3]-crop[1])+' pixels, with the same gray-level scale. Dashed boxes in the before/after views mark the same location.';
  $('pair').hidden=!detail.pair;if(detail.pair)$('pair').href=imageURL(detail.pair,true);
 }
-async function choose(id,preserveComment=false){try{const serial=++requestSerial;const params=new URLSearchParams({run:state.run,id,context:$('context').value});const detail=await api('/api/event?'+params);if(serial!==requestSerial)return;selected=detail;reviewFinished=false;$('empty').hidden=true;$('viewer').hidden=false;
+async function choose(id,preserveComment=false){try{pendingAdvance=null;const serial=++requestSerial;const params=new URLSearchParams({run:state.run,id,context:$('context').value});const detail=await api('/api/event?'+params);if(serial!==requestSerial)return;selected=detail;reviewFinished=false;$('empty').hidden=true;$('viewer').hidden=false;
  const e=detail.event;$('event-title').textContent=kindName[e.kind];$('event-meta').textContent=phaseName[e.phase]+' · '+axisName().toLowerCase()+' '+detail.peak_layer+(Number.isFinite(detail.z_mm)?' · Z = '+detail.z_mm.toFixed(3)+' mm':' · physical height not assigned')+' · threshold ratio × '+e.score.toFixed(2);
  $('event-meta').textContent+=' · persistence: '+(e.consecutive_count||1)+' '+(detail.axis==='acquisition'?'comparable acquisition(s)':'layer(s)')+' consecutive';
  if(e.on_part!==null&&e.on_part!==undefined)$('event-meta').textContent+=' · '+(e.on_part?'on extracted part':'outside extracted part')+(Number.isFinite(e.part_overlap)?' ('+Math.round(e.part_overlap*100)+'% overlap)':'');
- $('event-priority').textContent=e.priority_score.toFixed(1);$('event-priority').style.color=priorityColorCSS(e.priority_score);$('event-variation').textContent='Intensity × '+e.score.toFixed(2)+' · '+e.variation_component.toFixed(1)+' / 100 · area '+(e.area_component??0).toFixed(1)+' · part '+(e.part_component??50).toFixed(1);$('variation-meter').value=e.variation_component;$('event-persistence').textContent='Persistence '+e.consecutive_count+' · '+e.persistence_component.toFixed(1)+' / 100 · stage '+(e.stage_component??50).toFixed(1)+' · legacy '+(e.legacy_priority_score??e.priority_score).toFixed(1);$('persistence-meter').value=e.persistence_component;
+ $('event-priority').textContent=e.priority_score.toFixed(1);$('event-priority').style.color=priorityColorCSS(e.priority_score);$('event-variation').textContent='Detection strength × '+e.score.toFixed(2)+' · '+e.variation_component.toFixed(1)+' / 100 · area '+(e.area_component??0).toFixed(1)+' · part '+(e.part_component??50).toFixed(1);$('variation-meter').value=e.variation_component;$('event-persistence').textContent='Persistence '+e.consecutive_count+' · '+e.persistence_component.toFixed(1)+' / 100 · stage '+(e.stage_component??50).toFixed(1)+' · legacy '+(e.legacy_priority_score??e.priority_score).toFixed(1);$('persistence-meter').value=e.persistence_component;
  if(!preserveComment){$('comment').value=e.comment;$('saved').textContent=e.status==='a_examiner'?'':statusName[e.status]+' · saved';}renderInspection();document.querySelectorAll('.event').forEach(b=>b.classList.toggle('selected',String(b.dataset.event)===String(id)));
+ showScoreDetails(detail,state.run);
  }catch(e){message(e)}}
 async function decide(status){if(!selected||savingDecision)return;const current=selected,run=state.run,comment=$('comment').value;savingDecision=true;message('');renderState();
  try{await api('/api/decision',{run,id:current.event.id,snapshot:current.event.snapshot,status,comment});if(run!==state.run||selected!==current)return;
  current.event.status=status;current.event.comment=comment;$('saved').textContent=statusName[status]+' · saved';
  if(status==='retenue'||status==='ecartee'){
    const page=await loadList({after:current.event.id,autoSelect:false});if(!page||run!==state.run||selected!==current)return;
+   if(page.pending){pendingAdvance={run,id:current.event.id,current};$('saved').textContent=statusName[status]+' · saved · preparing next indication…';return;}
    if(page.next_id!==null&&page.next_id!==undefined)await choose(page.next_id);
-   else{selected=null;reviewFinished=true;requestSerial++;$('viewer').hidden=true;$('empty').hidden=false;$('empty').querySelector('strong').textContent='End of list · decision saved';}
+   else finishReview();
  }else await loadList({autoSelect:false});
  await refreshState();
  }catch(e){message(e)}finally{savingDecision=false;renderState();}}
@@ -200,7 +219,7 @@ $('stop').onclick=async()=>{try{await api('/api/stop',{});}catch(e){message(e)}}
 $('overlay').onchange=()=>document.querySelectorAll('.annotation-overlay').forEach(svg=>svg.style.display=$('overlay').checked?'':'none');
 $('context').onchange=()=>{if(selected)choose(selected.event.id,true)};
 try{$('review-sort').value=localStorage.getItem('powder-ranger-review-order')==='priority'?'priority':'layer';}catch{}
-$('review-sort').onchange=$('phase').onchange=$('status').onchange=$('part-only').onchange=()=>{try{localStorage.setItem('powder-ranger-review-order',$('review-sort').value);}catch{}requestSerial++;listSerial++;offset=0;selected=null;reviewFinished=false;$('viewer').hidden=true;$('empty').hidden=false;loadList().catch(message)};
+$('review-sort').onchange=$('phase').onchange=$('status').onchange=$('part-only').onchange=()=>{pendingAdvance=null;priorityPending=false;try{localStorage.setItem('powder-ranger-review-order',$('review-sort').value);}catch{}requestSerial++;listSerial++;offset=0;selected=null;reviewFinished=false;$('viewer').hidden=true;$('empty').hidden=false;loadList().catch(message)};
 $('previous').onclick=()=>{offset=Math.max(0,offset-25);selected=null;reviewFinished=false;loadList().catch(message)};$('next').onclick=()=>{offset+=25;selected=null;reviewFinished=false;loadList().catch(message)};
 $('keep').onclick=()=>decide('retenue');$('dismiss').onclick=()=>decide('ecartee');$('pending').onclick=()=>decide('a_examiner');
 const reportUI=createReportUI({getState:()=>state,api,reportError:message});

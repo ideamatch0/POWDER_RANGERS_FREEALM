@@ -2,7 +2,7 @@
 
 **Every layer under watch.**
 
-Version 0.3.12 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.15 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
@@ -34,9 +34,13 @@ The configurable pattern must provide named `camera`, `layer` and `phase` groups
 
 Run single-job analysis after checking the import. Initial gray-level calibration is calculated within that build. Post-spreading and post-melting images are analysed separately. Analysis is streamed from disk; processing speed depends on image dimensions, storage speed and image count. Progress and estimated remaining time are displayed.
 
+To exclude the chamber edges and gas-flow equipment, click **Define build plate…**, select a camera and mark the plate contour with at least three points. Drag points to adjust them. Save a contour for every camera, select **Inside build plate**, and run analysis again. Both gray calibration and detection use only pixels inside the contours. Previously completed analyses remain available when their original settings are selected. Camera presets can be exported/imported; check alignment after any camera movement or change of image aspect ratio.
+
 Set the minimum consecutive persistence to reduce short-lived indications. Review in chronological or priority order; **Keep** and **Dismiss** save the decision and advance to the next indication. The before/peak/after crops use the same region and gray-level scale.
 
 The priority score combines change intensity, persistence, indication area, overlap with the extracted part and process stage. It prioritises review; it is not a defect probability or a material-quality classification. Researcher annotations do not drive single-job detection. Reference-job comparison remains a planned mode in this version.
+
+Open **How is this score calculated?** to see actual weights, factor values, contributions and a replay of the trigger from cached measurements. The dashed yellow tile marks its peak. Detection strength can come from texture or a brightest/darkest pixel; it is not necessarily a visible change in mean brightness. Drift compares a smoothed measurement with an initial baseline, so adjacent photos may look alike. Area currently means the indication's bounding-box area, not the exact area of a material defect. Normal geometry evolution and reflections can also trigger indications. Priority preparation runs in the background and a saved Keep/Dismiss decision resumes on the next indication when preparation finishes.
 
 ## Explore and export
 

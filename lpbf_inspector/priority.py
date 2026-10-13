@@ -95,6 +95,11 @@ def with_priority(event, weights=None):
                area_component=round(100*area_component(box), 1),
                part_component=round(100*part_component(part), 1),
                stage_component=round(100*stage_component(row.get('phase'), row.get('kind')), 1))
+    factors = {'intensity':v, 'persistence':p, 'area':area_component(box),
+               'part':part_component(part), 'stage':stage_component(row.get('phase'),row.get('kind'))}
+    row['score_breakdown'] = {k:{'weight':weights[k], 'component':100*factor,
+                               'points':100*weights[k]*factor} for k,factor in factors.items()}
+    row['score_version'] = 'weighted-review-1'
     return row
 
 

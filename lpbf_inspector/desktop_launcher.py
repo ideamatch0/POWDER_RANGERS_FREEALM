@@ -19,7 +19,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.14'
+APP_VERSION='0.3.15'
 
 
 def data_folder(override=None):
@@ -161,13 +161,27 @@ def self_test(output,profile):
             assert app.state()['analysis']['measured']==16
             assert not app.state()['analysis']['errors']
             record['palette_png_supported']=True
-            event=app.events({'run':[app.key]})['items'][0];detail=app.detail(app.key,event['id'])
+            listing=app.events({'run':[app.key]});deadline=time.monotonic()+15
+            while listing.get('pending') and time.monotonic()<deadline:
+                time.sleep(.02);listing=app.events({'run':[app.key]})
+            assert not listing.get('pending'),'Review scores did not become available'
+            event=listing['items'][0];detail=app.detail(app.key,event['id'])
+            evidence=app.evidence(app.key,event['id'])
+            assert evidence['ratio_verified'],'Stored detector ratio could not be reproduced'
+            record['scoring_verified']=True
             app.decide({'run':app.key,'id':event['id'],'snapshot':detail['event']['snapshot'],'status':'retenue','comment':'Standalone binary check'})
             report=app.report(app.key,{'job_name':'Standalone acceptance report','template':'summary','planes':32})
             assert b'data:image/png;base64,' in report and b'Standalone acceptance report' in report
+            app.set_buildplate({'run':app.key,'outlines':{'cam1':[[.1,.1],[.9,.1],[.9,.9],[.1,.9]]}})
+            app.start({'threshold':12,'tile':16,'region':'plate','analysis_phase':'both'})
+            deadline=time.monotonic()+60
+            while app.running and time.monotonic()<deadline:time.sleep(.05)
+            assert not app.running and not app.error,app.error
+            assert app.state()['analysis']['measured']==16 and not app.state()['analysis']['errors']
+            record['buildplate_supported']=True
             server=ThreadingHTTPServer(('127.0.0.1',0),make_handler(app));threading.Thread(target=server.serve_forever,daemon=True).start()
             assets={}
-            for route in ('/','/workspace','/reports.js','/reports.css','/powder-ranger-icon.svg','/api/state'):
+            for route in ('/','/workspace','/reports.js','/reports.css','/score-details.js','/buildplate.js','/buildplate.css','/api/buildplate','/api/buildplate-image','/powder-ranger-icon.svg','/api/state'):
                 c=http.client.HTTPConnection('127.0.0.1',server.server_port,timeout=20)
                 try:
                     c.request('GET',route);response=c.getresponse();data=response.read();assert response.status==200,(route,response.status);assets[route]=len(data)

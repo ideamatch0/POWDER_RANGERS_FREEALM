@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const scope={window:{}};vm.createContext(scope);vm.runInContext(fs.readFileSync(path.join(__dirname,'../web/buildplate.js'),'utf8'),scope);
+const g=scope.window.PlateGeometry;
+assert.deepEqual(Array.from(g.normalize(640,512,1280,1024)),[.5,.5]);
+assert.deepEqual(Array.from(g.normalize(1280,1024,2560,2048)),[.5,.5]);
+assert.deepEqual(Array.from(g.normalize(-5,1200,1280,1024)),[0,1]);
+const points=[[.1,.1],[.9,.1],[.9,.9],[.1,.9]];
+const loaded=g.readPreset({version:1,image_size:[1280,1024],points},2560,2048);
+assert.match(loaded.warning,/Check/);assert.equal(loaded.points[0][0],.1);
+assert.match(g.readPreset({version:1,image_size:[1280,1024],points},1920,1080).warning,/Different image proportions/);
+assert.throws(()=>g.readPreset({version:1,points:[[0,0],[1,1],[2,0]]},1280,1024));
+console.log('Build plate: resolution-independent coordinates, bounds, preset validation and camera-proportion warning passed.');

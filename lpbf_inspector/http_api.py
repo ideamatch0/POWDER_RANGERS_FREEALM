@@ -58,14 +58,20 @@ def make_handler(app):
                     self.send((ROOT/'web'/'index.html').read_bytes(),'text/html; charset=utf-8')
                 elif route.path=='/stack.js':
                     self.send((ROOT/'web'/'stack.js').read_bytes(),'text/javascript; charset=utf-8')
-                elif route.path in {'/gallery.js','/libraries.js','/dark.css','/home.css','/home.js','/reports.js','/reports.css'}:
+                elif route.path in {'/gallery.js','/libraries.js','/dark.css','/home.css','/home.js','/reports.js','/reports.css','/buildplate.js','/buildplate.css','/score-details.js'}:
                     self.send((ROOT/'web'/route.path[1:]).read_bytes(),'text/css; charset=utf-8' if route.path.endswith('.css') else 'text/javascript; charset=utf-8')
                 elif route.path=='/api/state':
                     self.send(app.state())
+                elif route.path=='/api/buildplate':
+                    self.send(app.plate_reference(q.get('camera',[None])[0],q.get('phase',[None])[0]))
+                elif route.path=='/api/buildplate-image':
+                    self.send(app.plate_reference(q.get('camera',[None])[0],q.get('phase',[None])[0],image=True),'image/jpeg')
                 elif route.path=='/api/events':
                     self.send(app.events(q))
                 elif route.path=='/api/event':
                     self.send(app.detail(q.get('run',[''])[0],q['id'][0],q.get('context',['standard'])[0]))
+                elif route.path=='/api/evidence':
+                    self.send(app.evidence(q.get('run',[''])[0],q['id'][0]))
                 elif route.path=='/api/image':
                     event=q['event'][0] if 'event' in q else None
                     self.send(app.image(q.get('run',[''])[0],int(q['id'][0]),event,q.get('context',['standard'])[0]),'image/jpeg')
@@ -128,6 +134,8 @@ def make_handler(app):
                 if not isinstance(data,dict):raise ValueError('A JSON object is required.')
                 if self.path=='/api/analyze':
                     self.send(app.start(data))
+                elif self.path=='/api/buildplate':
+                    self.send(app.set_buildplate(data))
                 elif self.path=='/api/calibrate':
                     self.send(app.calibrate_job(data))
                 elif self.path=='/api/libraries/select':
