@@ -1,8 +1,14 @@
 # Powder Ranger — Every layer under watch.
 
-## Version 0.3.15 — English desktop edition
+## Version 0.3.16 — English desktop edition
 
-This version adds per-camera build-plate contours, reusable camera presets, background
+This version saves complete build-plate contours on editor close (including Escape),
+restores unfinished browser drafts and always reloads the authoritative saved outline.
+Contours remain separate for each job and camera, including after switching libraries
+with different cameras. A persistent status distinguishes saved contours from masks
+used by the current results. Reanalyze after changing a contour to apply it.
+
+It also includes per-camera build-plate contours, reusable camera presets, background
 part-position preparation, reliable Keep/Dismiss navigation with filters, and an
 explanation of each score with cached-measurement trigger verification. The weighted
 review equation is unchanged; a high priority is not a measured material severity.

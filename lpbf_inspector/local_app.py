@@ -148,7 +148,9 @@ class Application(ReportTasks,AcquisitionViews):
                 if path is None:raise ValueError('No image is available for this camera and stage.')
             if image:return preview(path,self.config.intensity_white_level,edge=1600)
             with Image.open(path) as photo:width,height=photo.size
-            return {'library':self.library['id'],'cameras':cameras,'camera':camera,'phase':stage,
+            return {'library':self.library['id'],'run':self.key,
+                    'profile':hashlib.sha256(str(self.root.resolve()).encode()).hexdigest()[:16],
+                    'cameras':cameras,'camera':camera,'phase':stage,
                     'width':width,'height':height,'name':path.name,'outlines':self.plate_outlines()}
 
     def set_buildplate(self,data):
@@ -256,7 +258,8 @@ class Application(ReportTasks,AcquisitionViews):
         config.roi_by_camera=self.library.get('default_roi',{}) if region=='parts' else {}
         config.plate_by_camera=self.plate_outlines() if region=='plate' else {}
         if region=='plate' and not config.plate_by_camera:raise ValueError('Define the build plate first.')
-        known=['aalto'] if self.library['mode']=='gallery' else getattr(self,'dataset',{}).get('cameras',self.library.get('summary',{}).get('cameras',[]))
+        dataset=getattr(self,'dataset',{})
+        known=['aalto'] if self.library['mode']=='gallery' else (dataset.get('cameras',[]) if dataset.get('id')==self.library['id'] else self.library.get('summary',{}).get('cameras',[]))
         if region=='plate' and set(known)-set(config.plate_by_camera):raise ValueError('Define the build plate for every camera before analyzing.')
         config.analysis_phases=['etalement','fusion'] if phase=='both' else [phase]
         return config.validate()

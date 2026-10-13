@@ -2,7 +2,7 @@
 
 **Every layer under watch.**
 
-Version 0.3.15 · English interface · Windows 10/11, 64-bit (x64)
+Version 0.3.16 · English interface · Windows 10/11, 64-bit (x64)
 
 ## Start or install
 
@@ -34,7 +34,9 @@ The configurable pattern must provide named `camera`, `layer` and `phase` groups
 
 Run single-job analysis after checking the import. Initial gray-level calibration is calculated within that build. Post-spreading and post-melting images are analysed separately. Analysis is streamed from disk; processing speed depends on image dimensions, storage speed and image count. Progress and estimated remaining time are displayed.
 
-To exclude the chamber edges and gas-flow equipment, click **Define build plate…**, select a camera and mark the plate contour with at least three points. Drag points to adjust them. Save a contour for every camera, select **Inside build plate**, and run analysis again. Both gray calibration and detection use only pixels inside the contours. Previously completed analyses remain available when their original settings are selected. Camera presets can be exported/imported; check alignment after any camera movement or change of image aspect ratio.
+To exclude the chamber edges and gas-flow equipment, click **Define build plate…**, select a camera and mark the plate contour with at least three points. Drag points to adjust them. Complete contours are saved when you click **Save outline and use it**, **Close**, or press **Escape**. Incomplete or rejected contours remain browser drafts, not active analysis masks. Reopening the editor reloads the saved outline or restores a compatible draft. A previous draft cannot silently overwrite a newer saved contour.
+
+Save a contour for every camera, select **Inside build plate**, and run analysis again. The status below the settings confirms how many cameras have saved contours and whether the current results use them. A solid cyan contour in the overview was used for those measurements; a dashed cyan contour is saved but was not used for the displayed results. Both gray calibration and detection use only pixels inside active contours. Previously completed analyses remain available when their original settings are selected. Saved contours persist across application restarts and remain separate for each job. Unfinished drafts are stored in this browser and local address; save a complete contour before switching computers or local addresses. Camera presets can be exported/imported; check alignment after any camera movement or change of image aspect ratio.
 
 Set the minimum consecutive persistence to reduce short-lived indications. Review in chronological or priority order; **Keep** and **Dismiss** save the decision and advance to the next indication. The before/peak/after crops use the same region and gray-level scale.
 

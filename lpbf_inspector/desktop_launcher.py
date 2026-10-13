@@ -19,7 +19,7 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.15'
+APP_VERSION='0.3.16'
 
 
 def data_folder(override=None):
@@ -179,6 +179,11 @@ def self_test(output,profile):
             assert not app.running and not app.error,app.error
             assert app.state()['analysis']['measured']==16 and not app.state()['analysis']['errors']
             record['buildplate_supported']=True
+            restored=Application(root)
+            assert restored.plate_outlines()==app.plate_outlines()
+            assert restored.config.plate_by_camera==app.config.plate_by_camera
+            assert restored.plate_reference()['outlines']==app.plate_outlines()
+            record['buildplate_persistence_verified']=True
             server=ThreadingHTTPServer(('127.0.0.1',0),make_handler(app));threading.Thread(target=server.serve_forever,daemon=True).start()
             assets={}
             for route in ('/','/workspace','/reports.js','/reports.css','/score-details.js','/buildplate.js','/buildplate.css','/api/buildplate','/api/buildplate-image','/powder-ranger-icon.svg','/api/state'):

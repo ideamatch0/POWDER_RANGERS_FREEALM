@@ -8,7 +8,7 @@ class Element {
  setAttribute(k,v){this.attrs[k]=v}
 }
 const nodes={};const scope={document:{createElement:t=>new Element(t),createElementNS:(_,t)=>new Element(t)},
- $:id=>nodes[id]||(nodes[id]=new Element('div')),JSON,Math,
+ $:id=>nodes[id]||(nodes[id]=new Element('div')),JSON,Math,state:{buildplate:{outlines:{}}},
  phaseName:{fusion:'Fusion',acquisition:'Acquisition'},axisName:()=>scope.selected.axis==='acquisition'?'Acquisition':'Couche',imageURL:(id,crop)=>'/image/'+id+'?crop='+crop};
 vm.createContext(scope);
 vm.runInContext(html.slice(html.indexOf('function svgElement'),html.indexOf('async function choose')),scope);
@@ -24,4 +24,10 @@ for(const axis of ['layer','acquisition']){
  const crops=nodes['image-grid'].children.map(f=>f.children.find(e=>e.className==='photo').children.find(e=>e.tag==='svg').attrs.viewBox);
  assert.deepEqual(crops,['192 292 256 256','192 292 256 256','192 292 256 256']);
 }
+scope.state.buildplate.outlines={cam1:[[.1,.1],[.9,.1],[.9,.9]]};scope.selected.event.camera='cam1';scope.renderInspection();
+let contour=nodes.overview.children.find(e=>e.tag==='svg').children.find(e=>e.tag==='polygon');
+assert.equal(contour.attrs['stroke-dasharray'],'5 4');assert.match(nodes['zoom-note'].textContent,/was not used/);
+scope.selected.geometry.plate_polygon=scope.state.buildplate.outlines.cam1;scope.renderInspection();
+contour=nodes.overview.children.find(e=>e.tag==='svg').children.find(e=>e.tag==='polygon');
+assert.equal(contour.attrs['stroke-dasharray'],'none');assert.doesNotMatch(nodes['zoom-note'].textContent,/was not used/);
 console.log('Revue commune NIST/Aalto : cadre bleu pointillé, cadre rouge et trois cadrages identiques vérifiés.');

@@ -30,6 +30,15 @@ jobs:
         working-directory: lpbf_inspector
         run: python -m unittest discover -s tests -q
 
+      - name: Run interface regression tests
+        shell: pwsh
+        working-directory: lpbf_inspector
+        run: |
+          Get-ChildItem tests/*.cjs | ForEach-Object {
+            node $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Interface regression failed: $($_.Name)" }
+          }
+
       - name: Build the standalone application
         working-directory: lpbf_inspector
         run: python build_windows.py
@@ -51,6 +60,7 @@ jobs:
           if (-not $test.palette_png_supported) { throw "The packaged application could not analyze indexed PNG images." }
           if (-not $test.instance_lock_recovered) { throw "The packaged application did not handle an existing instance lock." }
           if (-not $test.buildplate_supported) { throw "The packaged application could not analyze a masked build plate." }
+          if (-not $test.buildplate_persistence_verified) { throw "The packaged application did not restore saved build-plate contours." }
           if (-not $test.scoring_verified) { throw "The packaged application could not reproduce a detection ratio from cached measurements." }
           if ($test.version -ne "${{ github.ref_name }}".TrimStart("v")) { throw "The packaged version does not match its release tag." }
 

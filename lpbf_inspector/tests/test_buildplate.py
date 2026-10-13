@@ -62,6 +62,8 @@ class BuildPlateTests(unittest.TestCase):
             old_run=app.key;old_project=app.project
             reference=app.plate_reference()
             self.assertEqual(reference['camera'],'cam1');self.assertEqual(reference['width'],64)
+            self.assertEqual(reference['run'],old_run)
+            self.assertEqual(len(reference['profile']),16)
             points=[[.2,.2],[.8,.2],[.8,.8],[.2,.8]]
             saved=app.set_buildplate({'run':old_run,'outlines':{'cam1':points}})
             self.assertNotEqual(saved['run'],old_run);self.assertIsNone(saved['analysis'])
@@ -72,6 +74,42 @@ class BuildPlateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'changed'):app.set_buildplate({'run':old_run,'outlines':{}})
             cleared=app.set_buildplate({'run':app.key,'outlines':{}})
             self.assertEqual(cleared['run'],old_run);self.assertEqual(cleared['summary']['images_mesurees'],7)
+
+    def test_contours_survive_library_switch_with_different_cameras_and_restart(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);entries=[]
+            app=Application(root)
+            for camera in ('cam1','cam2'):
+                source=root/camera;source.mkdir()
+                Image.new('L',(64,64),100).save(source/f'{camera}_layer1_spread.jpg')
+                entry=app.catalog.add({'path':str(source),'config':asdict(Config()),'name':camera},lambda **kw:None,lambda:False)
+                entries.append(entry['id'])
+                app.select_library(entry['id'])
+                app.set_buildplate({'run':app.key,'outlines':{camera:[[.1,.1],[.9,.1],[.9,.9],[.1,.9]]}})
+            for key,camera in zip(entries,('cam1','cam2')):
+                state=app.select_library(key)
+                self.assertEqual(list(state['config']['plate_by_camera']),[camera])
+                app.config=app.make_config({'region':'full'})
+                app.save_preferences()
+                self.assertIn(camera,app.plate_outlines())
+                app.config=app.make_config({'region':'plate'})
+                app.save_preferences()
+            restored=Application(root)
+            self.assertEqual(restored.plate_outlines(),app.plate_outlines())
+            self.assertEqual(restored.plate_reference()['profile'],app.plate_reference()['profile'])
+
+    def test_partial_camera_contours_stay_saved_without_enabling_incomplete_mask(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);source=root/'images';source.mkdir()
+            for camera in ('cam1','cam2'):Image.new('L',(64,64),100).save(source/f'{camera}_layer1_spread.jpg')
+            app=Application(root,source)
+            outlines={'cam1':[[.1,.1],[.9,.1],[.9,.9],[.1,.9]]}
+            saved=app.set_buildplate({'run':app.key,'outlines':outlines})
+            self.assertEqual(saved['buildplate']['outlines'],outlines)
+            self.assertEqual(saved['config']['plate_by_camera'],{})
+            restored=Application(root,source)
+            self.assertEqual(restored.plate_outlines(),outlines)
+            self.assertEqual(restored.config.plate_by_camera,{})
 
     def test_unmasked_project_signature_stays_compatible(self):
         import hashlib
