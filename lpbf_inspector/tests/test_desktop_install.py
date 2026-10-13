@@ -1,7 +1,9 @@
 """Installation must preserve the runtime required by folder builds."""
 import os
+import json
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 import types
 import unittest
@@ -12,6 +14,59 @@ import desktop_launcher
 
 
 class DesktopInstallTest(unittest.TestCase):
+    @unittest.skipUnless(os.name=='nt','Windows byte-range locking')
+    def test_second_process_detects_owner_and_can_restart_after_release(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile=Path(directory)
+            owner=desktop_launcher.acquire_instance_lock(profile)
+            self.assertIsNotNone(owner)
+            script=("import sys; from pathlib import Path; "
+                    "from desktop_launcher import acquire_instance_lock; "
+                    "handle=acquire_instance_lock(Path(sys.argv[1])); "
+                    "print('owned' if handle else 'busy'); "
+                    "handle.close() if handle else None")
+            def launch():
+                return subprocess.run([sys.executable,'-c',script,directory],
+                                      cwd=Path(desktop_launcher.__file__).parent,
+                                      capture_output=True,text=True,check=True,timeout=15).stdout.strip()
+            try:
+                self.assertEqual(launch(),'busy')
+            finally:owner.close()
+            self.assertEqual(launch(),'owned')
+
+    def test_existing_instance_falls_back_when_desktop_cannot_open(self):
+        with patch.object(desktop_launcher,'open_desktop_window',side_effect=RuntimeError('Webview unavailable')), \
+             patch.object(desktop_launcher.webbrowser,'open',return_value=True) as browser, \
+             patch.object(desktop_launcher.logging,'exception'):
+            desktop_launcher.reopen_instance('http://127.0.0.1:8765/')
+        browser.assert_called_once_with('http://127.0.0.1:8765/')
+
+    def test_existing_instance_keeps_desktop_when_available(self):
+        with patch.object(desktop_launcher,'open_desktop_window') as desktop, \
+             patch.object(desktop_launcher.webbrowser,'open') as browser:
+            desktop_launcher.reopen_instance('http://127.0.0.1:8765/')
+        desktop.assert_called_once_with('http://127.0.0.1:8765/')
+        browser.assert_not_called()
+
+    @unittest.skipUnless(os.name=='nt','Windows byte-range locking')
+    def test_shortcut_launch_reopens_an_already_locked_profile(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile=Path(directory)
+            (profile/'instance.lock').write_bytes(b'0')
+            (profile/'instance.json').write_text(json.dumps({'pid':123,'port':8765}),encoding='utf-8')
+            owner=desktop_launcher.acquire_instance_lock(profile)
+            self.assertIsNotNone(owner)
+            try:
+                with patch.object(sys,'argv',['Powder Ranger.exe','--data-dir',directory]), \
+                     patch.object(desktop_launcher.http.client,'HTTPConnection') as connection, \
+                     patch.object(desktop_launcher,'reopen_instance') as reopen, \
+                     patch('local_app.Application',side_effect=AssertionError('Must reuse the running job')):
+                    connection.return_value.getresponse.return_value.status=200
+                    self.assertEqual(desktop_launcher.main(),0)
+                reopen.assert_called_once_with('http://127.0.0.1:8765/',False)
+                self.assertIsNone(desktop_launcher.acquire_instance_lock(profile))
+            finally:owner.close()
+
     def test_copies_runtime_and_creates_shortcuts_after_copy(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

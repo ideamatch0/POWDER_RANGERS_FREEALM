@@ -1,6 +1,7 @@
 """Windows launcher. Frozen builds include Python, NumPy, Pillow and the web UI."""
 from __future__ import annotations
 import argparse
+import errno
 from dataclasses import asdict
 import http.client
 import json
@@ -18,12 +19,39 @@ import time
 import traceback
 import webbrowser
 
-APP_VERSION='0.3.13'
+APP_VERSION='0.3.14'
 
 
 def data_folder(override=None):
     if override:return Path(override).expanduser().resolve()
     return Path(os.environ.get('LOCALAPPDATA',str(Path.home()/'AppData/Local')))/'PowderRanger'
+
+
+def acquire_instance_lock(profile):
+    """Lock byte zero without reading it: Windows forbids reads of locked bytes."""
+    import msvcrt
+    handle=(profile/'instance.lock').open('a+b')
+    try:
+        handle.seek(0)
+        # Windows permits locking beyond EOF, so no initial read/write is needed.
+        msvcrt.locking(handle.fileno(),msvcrt.LK_NBLCK,1)
+        return handle
+    except OSError as error:
+        handle.close()
+        if error.errno in {errno.EACCES,errno.EAGAIN,errno.EDEADLK}:
+            return None
+        raise
+
+
+def reopen_instance(url,browser=False):
+    if not browser:
+        try:
+            open_desktop_window(url)
+            return
+        except Exception:
+            logging.exception('Desktop reopening failed; opening the existing local workspace')
+    if not webbrowser.open(url):
+        raise OSError('The application is running at '+url+' but Windows could not open its window.')
 
 
 def install_current_executable():
@@ -92,6 +120,16 @@ def self_test(output,profile):
         profile.mkdir(parents=True,exist_ok=True)
         with tempfile.TemporaryDirectory(prefix='acceptance-',dir=profile) as directory:
             root=Path(directory);app=Application(root)
+            if os.name=='nt':
+                owner=acquire_instance_lock(root)
+                assert owner is not None
+                try:
+                    assert acquire_instance_lock(root) is None,'Another handle acquired the active instance lock'
+                finally:owner.close()
+                reopened=acquire_instance_lock(root)
+                assert reopened is not None,'The instance lock was not released'
+                reopened.close()
+                record['instance_lock_recovered']=True
             assert app.dataset.get('empty') and app.dataset['images']==0
             # Test the actual frozen binary against an unavailable saved drive.
             offline=root/'offline-profile';offline.mkdir()
@@ -194,12 +232,8 @@ def main():
     lock=None;server=None
     try:
         if os.name=='nt':
-            import msvcrt
-            lock=(profile/'instance.lock').open('a+b');lock.seek(0)
-            if lock.read(1)==b'':lock.write(b'0');lock.flush()
-            lock.seek(0)
-            try:msvcrt.locking(lock.fileno(),msvcrt.LK_NBLCK,1)
-            except OSError:
+            lock=acquire_instance_lock(profile)
+            if lock is None:
                 for _ in range(20):
                     try:
                         port=int(json.loads((profile/'instance.json').read_text())['port'])
@@ -207,10 +241,10 @@ def main():
                         connection=http.client.HTTPConnection('127.0.0.1',port,timeout=1)
                         try:connection.request('GET','/api/state');response=connection.getresponse();response.read();assert response.status==200
                         finally:connection.close()
-                        if args.browser:webbrowser.open(f'http://127.0.0.1:{port}/')
-                        else:open_desktop_window(f'http://127.0.0.1:{port}/')
-                        return 0
                     except (OSError,ValueError,AssertionError):time.sleep(.2)
+                    else:
+                        reopen_instance(f'http://127.0.0.1:{port}/',args.browser)
+                        return 0
                 raise OSError('Powder Ranger is already starting. Try opening it again in a few seconds.')
         app=Application(profile);server=ThreadingHTTPServer(('127.0.0.1',0),make_handler(app))
         url=f'http://127.0.0.1:{server.server_port}/'
